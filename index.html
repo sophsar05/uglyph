@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UGLYPH | Industrial Grade Harvest</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- CSS VARIABLES --- */
+        :root {
+            --yellow: #FFD600;
+            --black: #111111;
+            --white: #FFFFFF;
+            --red: #D32F2F;
+            --grey: #E5E5E5;
+            --border-width: 3px;
+            --brutal-shadow: 6px 6px 0px var(--black);
+            --brutal-shadow-hover: 10px 10px 0px var(--black);
+            --brutal-shadow-active: 2px 2px 0px var(--black);
+            --grid-pattern: linear-gradient(rgba(17, 17, 17, 0.05) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(17, 17, 17, 0.05) 1px, transparent 1px);
+        }
+
+        /* --- GLOBAL RESET & CUSTOM CURSOR --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: crosshair;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--yellow);
+            color: var(--black);
+            line-height: 1.5;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, .brand-font {
+            font-family: 'Anton', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .mono-font {
+            font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;
+        }
+
+        /* --- UTILITY --- */
+        .container {
+            max-width: 1350px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        .btn-dark {
+            background: var(--black);
+            color: var(--yellow);
+            border: var(--border-width) solid var(--black);
+            padding: 12px 28px;
+            font-weight: 900;
+            font-size: 14px;
+            text-transform: uppercase;
+            transition: all 0.15s ease-out;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: var(--brutal-shadow);
+        }
+
+        .btn-dark:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: var(--brutal-shadow-hover);
+            color: var(--white);
+        }
+
+        .btn-dark:active {
+            transform: translate(2px, 2px);
+            box-shadow: var(--brutal-shadow-active);
+        }
+
+        /* Animated Hazard Tape */
+        .hazard-strip {
+            height: 24px;
+            width: 100%;
+            background: repeating-linear-gradient(
+                45deg,
+                var(--black),
+                var(--black) 24px,
+                var(--yellow) 24px,
+                var(--yellow) 48px
+            );
+            border-top: var(--border-width) solid var(--black);
+            border-bottom: var(--border-width) solid var(--black);
+            animation: slideHazard 20s linear infinite;
+            position: relative;
+            z-index: 10;
+        }
+
+        @keyframes slideHazard {
+            from { background-position: 0 0; }
+            to { background-position: 100vw 0; }
+        }
+
+        /* --- HEADER --- */
+        header {
+            border-bottom: var(--border-width) solid var(--black);
+            padding: 0 40px;
+            height: 80px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--yellow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo { font-size: 38px; line-height: 1; letter-spacing: 2px; }
+        .header-actions { display: flex; gap: 20px; }
+
+        /* --- HERO SECTION --- */
+        .hero-wrapper {
+            background-image: var(--grid-pattern);
+            background-size: 40px 40px;
+            border-bottom: var(--border-width) solid var(--black);
+        }
+
+        .hero {
+            padding: 100px 0;
+            min-height: 85vh;
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .hero-tags { display: flex; gap: 12px; margin-bottom: 30px; }
+        .tag-dark { 
+            background: var(--white); 
+            color: var(--black); 
+            padding: 6px 14px; 
+            font-size: 12px; 
+            font-weight: 900; 
+            border: 2px solid var(--black); 
+            box-shadow: 3px 3px 0px var(--black);
+        }
+
+        .hero-title { 
+            font-size: clamp(80px, 9vw, 140px); 
+            line-height: 0.85; 
+            margin-bottom: 30px; 
+            color: var(--black);
+        }
+
+        .hero-title .highlight-wrapper {
+            display: inline-block;
+            perspective: 1000px;
+            margin-top: 15px;
+        }
+
+        .hero-title .highlight { 
+            background: var(--black); 
+            color: var(--yellow); 
+            padding: 5px 25px; 
+            display: inline-block; 
+            border: var(--border-width) solid var(--black);
+            box-shadow: 8px 8px 0px rgba(17,17,17,0.2);
+            animation: stampDrop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, 
+                       pulseShadow 2s infinite ease-in-out alternate;
+            transform-origin: center;
+        }
+
+        @keyframes stampDrop {
+            0% { transform: scale(2) rotate(-15deg) translateY(-20px); opacity: 0; }
+            100% { transform: scale(1) rotate(-4deg) translateY(0); opacity: 1; }
+        }
+
+        @keyframes pulseShadow {
+            0% { box-shadow: 6px 6px 0px var(--black); }
+            100% { box-shadow: 12px 12px 0px var(--black); }
+        }
+        
+        .hero-desc { 
+            font-weight: 700; 
+            font-size: 20px; 
+            max-width: 500px; 
+            margin-bottom: 45px; 
+            text-transform: uppercase; 
+            color: rgba(17, 17, 17, 0.85); 
+            line-height: 1.4;
+            border-left: 4px solid var(--black);
+            padding-left: 20px;
+        }
+        
+        .hero-stats { display: flex; gap: 20px; margin-top: 60px; }
+        .stat-box { 
+            background: var(--white); 
+            border: var(--border-width) solid var(--black); 
+            padding: 20px 15px; 
+            text-align: center; 
+            width: 120px; 
+            box-shadow: var(--brutal-shadow); 
+            transition: transform 0.2s ease;
+        }
+        .stat-box:hover { transform: translateY(-5px); }
+        .stat-num { font-family: 'Anton', sans-serif; font-size: 40px; display: block; line-height: 1; margin-bottom: 5px; }
+        .stat-label { font-size: 11px; font-weight: 900; letter-spacing: 0.5px; }
+
+        .hero-art {
+            border: var(--border-width) solid var(--black);
+            height: 480px; 
+            position: relative; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            background-color: var(--yellow);
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(17,17,17,0.04) 10px, rgba(17,17,17,0.04) 20px);
+            box-shadow: 16px 16px 0px var(--black);
+        }
+        .hero-art .circle { border: 4px dashed rgba(17, 17, 17, 0.5); width: 65%; height: 80%; border-radius: 50%; display: flex; justify-content: center; align-items: center; animation: spinSlow 40s linear infinite; }
+        @keyframes spinSlow { 100% { transform: rotate(360deg); } }
+        .hero-art h2 { font-size: 140px; color: rgba(17, 17, 17, 0.1); animation: spinSlow 40s linear infinite reverse; }
+        
+        .floating-tag { 
+            position: absolute; 
+            top: -25px; 
+            right: -25px; 
+            background: var(--white); 
+            border: var(--border-width) solid var(--black); 
+            padding: 15px 20px; 
+            font-weight: 900; 
+            font-size: 14px; 
+            text-align: center;
+            line-height: 1.2;
+            box-shadow: var(--brutal-shadow); 
+            animation: float 4s ease-in-out infinite; 
+            z-index: 10;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(8deg); }
+            50% { transform: translateY(-15px) rotate(12deg); }
+        }
+
+        /* --- MARQUEE --- */
+        .marquee-wrap { background: var(--black); color: var(--yellow); padding: 20px 0; overflow: hidden; white-space: nowrap; display: flex; align-items: center; }
+        .marquee-content { display: inline-block; animation: marqueeScroll 40s linear infinite; font-family: 'Anton', sans-serif; font-size: 24px; letter-spacing: 1px; }
+        .marquee-content span { margin: 0 30px; vertical-align: middle; }
+        .marquee-content .star { color: rgba(255, 214, 0, 0.4); font-size: 18px; font-family: 'Inter', sans-serif; }
+        @keyframes marqueeScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        /* --- SHOP SECTION --- */
+        .shop-section { padding: 120px 0; background: var(--grey); border-top: var(--border-width) solid var(--black); }
+        .section-header { margin-bottom: 60px; }
+        .section-header .sub { background: var(--black); color: var(--yellow); display: inline-block; padding: 6px 14px; font-size: 13px; font-weight: 900; margin-bottom: 20px; box-shadow: 3px 3px 0px rgba(0,0,0,0.2); }
+        .shop-title { font-size: 80px; display: flex; justify-content: space-between; align-items: center; line-height: 1;}
+        
+        .btn-outline { background: var(--white); border: var(--border-width) solid var(--black); padding: 12px 24px; font-weight: 900; font-size: 16px; transition: all 0.2s; box-shadow: var(--brutal-shadow); display: flex; align-items: center; gap: 8px; }
+        .btn-outline:hover { background: var(--yellow); transform: translate(-2px, -2px); box-shadow: 8px 8px 0px var(--black); }
+        
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 50px; }
+        .product-card { border: var(--border-width) solid var(--black); background: var(--white); display: flex; flex-direction: column; box-shadow: 12px 12px 0px var(--black); transition: transform 0.2s; }
+        .product-card:hover { transform: translateY(-8px); box-shadow: 16px 16px 0px var(--black); }
+        
+        .card-img-wrap { 
+            height: 300px; 
+            background-color: var(--white);
+            background-image: var(--grid-pattern);
+            background-size: 20px 20px;
+            position: relative; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            border-bottom: var(--border-width) solid var(--black); 
+            overflow: hidden; 
+        }
+        .card-img-wrap::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 16px; background: repeating-linear-gradient(45deg, var(--black), var(--black) 10px, var(--yellow) 10px, var(--yellow) 20px); border-bottom: 2px solid var(--black);}
+        .badge-left { position: absolute; top: 30px; left: 20px; background: var(--black); color: var(--yellow); padding: 6px 12px; font-size: 12px; font-weight: 900; border: 2px solid var(--black); }
+        .badge-right { position: absolute; top: 30px; right: 20px; background: var(--red); color: var(--white); padding: 6px 12px; font-size: 14px; font-weight: 900; border: 2px solid var(--black); box-shadow: 3px 3px 0px var(--black); transform: rotate(5deg);}
+        .price-tag { position: absolute; bottom: 20px; right: 20px; background: var(--yellow); color: var(--black); padding: 10px 20px; font-size: 24px; font-family: 'Anton', sans-serif; border: var(--border-width) solid var(--black); box-shadow: 5px 5px 0px var(--black); }
+        
+        .card-body { padding: 35px; }
+        .product-name { font-size: 32px; line-height: 1.1; margin-bottom: 10px; }
+        .product-cat { font-size: 13px; color: #555; margin-bottom: 30px; font-weight: 900; letter-spacing: 1px;}
+        
+        .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .price-box { border: 2px solid #ddd; padding: 15px; background: #fafafa; }
+        .price-box.highlight { border: var(--border-width) solid var(--black); background: var(--yellow); transform: scale(1.05); transform-origin: left center; box-shadow: 4px 4px 0px rgba(0,0,0,0.1); }
+        .p-label { font-size: 11px; font-weight: 900; display: block; margin-bottom: 5px; color: #666; }
+        .price-box.highlight .p-label { color: var(--black); }
+        .p-value { font-size: 28px; font-family: 'Anton', sans-serif; }
+        .price-box:not(.highlight) .p-value { color: #aaa; text-decoration: line-through; }
+        
+        .select-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 30px; }
+        .select-grid select { padding: 15px; border: var(--border-width) solid var(--black); font-weight: 900; width: 100%; outline: none; appearance: none; background: var(--grey) url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23111111%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E") no-repeat right 15px top 50%; background-size: 14px auto; transition: background-color 0.2s;}
+        .select-grid select:hover { background-color: var(--yellow); }
+        .btn-full { width: 100%; padding: 18px; font-size: 18px; }
+
+        /* --- DARK MODE (PROTOCOL & FOOTER) --- */
+        .dark-mode { 
+            background: var(--black); 
+            color: var(--white); 
+            position: relative;
+        }
+
+        /* --- REFINED PROTOCOL SECTION --- */
+        .protocol { 
+            padding: 120px 0; 
+            position: relative;
+        }
+        
+        .protocol::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        .protocol-header { display: flex; align-items: center; gap: 30px; margin-bottom: 70px; position: relative; z-index: 2;}
+        .protocol-title { color: var(--yellow); font-size: 50px; margin: 0; }
+        .protocol-line { flex: 1; height: 2px; background: repeating-linear-gradient(90deg, #333, #333 10px, transparent 10px, transparent 20px); }
+
+        .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; position: relative; z-index: 2;}
+        
+        .step-card { 
+            background: rgba(17, 17, 17, 0.8); 
+            border: 2px solid #333; 
+            padding: 50px 40px; 
+            position: relative; 
+            transition: all 0.3s ease; 
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+        }
+        
+        .step-card:hover { 
+            border-color: var(--yellow); 
+            transform: translateY(-5px); 
+            box-shadow: 8px 8px 0px rgba(255, 214, 0, 0.1); 
+        }
+        
+        .step-watermark {
+            position: absolute;
+            right: 10px;
+            bottom: -20px;
+            font-family: 'Anton', sans-serif;
+            font-size: 180px;
+            line-height: 1;
+            color: transparent;
+            -webkit-text-stroke: 2px #222;
+            z-index: 0;
+            transition: all 0.3s ease;
+        }
+
+        .step-card:hover .step-watermark {
+            -webkit-text-stroke: 2px rgba(255, 214, 0, 0.2);
+            transform: scale(1.05);
+        }
+
+        .step-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-card h3 { 
+            font-size: 32px; 
+            line-height: 1.1; 
+            margin-bottom: 20px;
+            color: var(--white);
+            display: inline-block;
+            border-bottom: 2px solid var(--yellow);
+            padding-bottom: 5px;
+        }
+        
+        .step-card p { 
+            font-size: 15px; 
+            color: #aaa; 
+            font-weight: 500; 
+            line-height: 1.6; 
+        }
+
+        /* --- REFINED FOOTER --- */
+        footer { 
+            background: var(--black); 
+            padding: 80px 0 40px; 
+            border-top: 2px solid #333; 
+            position: relative;
+        }
+        
+        .footer-grid { 
+            display: grid; 
+            grid-template-columns: 2fr 1fr 1fr; 
+            gap: 60px; 
+            border-bottom: 1px solid #333; 
+            padding-bottom: 60px; 
+            margin-bottom: 40px; 
+        }
+
+        .footer-logo-block .footer-logo { 
+            color: var(--white); 
+            font-size: 60px; 
+            margin-bottom: 15px; 
+            letter-spacing: 2px; 
+        }
+
+        .footer-desc { 
+            color: #888; 
+            font-size: 15px; 
+            max-width: 350px; 
+            margin-bottom: 30px; 
+            line-height: 1.6; 
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 214, 0, 0.1);
+            border: 1px solid var(--yellow);
+            padding: 8px 16px;
+            color: var(--yellow);
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        .status-badge::before {
+            content: '';
+            display: block;
+            width: 8px;
+            height: 8px;
+            background: var(--yellow);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 214, 0, 0.7); }
+            70% { opacity: 0.5; box-shadow: 0 0 0 5px rgba(255, 214, 0, 0); }
+            100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 214, 0, 0); }
+        }
+
+        .footer-title { 
+            font-size: 18px; 
+            color: var(--white); 
+            margin-bottom: 30px; 
+            letter-spacing: 1px; 
+            position: relative;
+            padding-left: 15px;
+        }
+        
+        .footer-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 5px;
+            bottom: 5px;
+            width: 4px;
+            background: var(--yellow);
+        }
+
+        .footer-list { list-style: none; }
+        
+        .footer-list.links li { margin-bottom: 15px; }
+        .footer-list.links li a { 
+            color: #888; 
+            text-decoration: none; 
+            transition: all 0.2s ease; 
+            font-weight: 700; 
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+        }
+        .footer-list.links li a:hover { color: var(--yellow); transform: translateX(5px); }
+
+        .system-logs li {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 12px;
+            border-bottom: 1px dashed #333;
+            padding-bottom: 12px;
+        }
+        .system-logs li:last-child { border-bottom: none; }
+        .system-logs li span { color: #aaa; }
+
+        .footer-bottom { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        
+        .copyright {
+            font-size: 14px;
+            color: #666;
+            font-weight: 700;
+        }
+
+        .footer-badges { display: flex; gap: 15px; }
+        .footer-badges span { 
+            border: 1px solid #444; 
+            color: #888; 
+            padding: 8px 14px; 
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            background: rgba(255,255,255,0.02);
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 1024px) {
+            .hero { grid-template-columns: 1fr; text-align: center; gap: 50px; padding: 80px 0;}
+            .hero-desc { margin: 0 auto 40px; border-left: none; padding-left: 0; }
+            .hero-stats { justify-content: center; }
+            .hero-tags { justify-content: center; }
+            .shop-title { font-size: 60px; }
+            .steps-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 900px) {
+            .footer-grid { grid-template-columns: 1fr; gap: 50px; }
+            .shop-title { flex-direction: column; align-items: flex-start; gap: 20px; font-size: 50px; }
+            .footer-bottom { flex-direction: column; gap: 20px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-wrap">
+            <div class="brand-font logo">UGLYPH</div>
+        </div>
+        <nav class="header-actions">
+            <a href="#" class="btn-dark">MANIFEST</a>
+            <a href="#" class="btn-dark">SUPPLIER LOGIN ▼</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="hero-wrapper">
+            <section class="container hero">
+                <div class="hero-left">
+                    <div class="hero-tags">
+                        <span class="tag-dark">EST. 2026</span>
+                        <span class="tag-dark">MANILA, PH</span>
+                    </div>
+                    <h1 class="hero-title">
+                        FRESHLY<br>SALVAGED<br>
+                        <div class="highlight-wrapper">
+                            <span class="highlight">DAILY.</span>
+                        </div>
+                    </h1>
+                    <p class="hero-desc">Rescuing imperfect harvest from farm waste.<br>Industrial grade quality — at 50% off retail.</p>
+                    <button class="btn-dark" style="font-size: 20px; padding: 20px 45px;">
+                        SHOP THE DROP 
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+                    </button>
+                    
+                    <div class="hero-stats">
+                        <div class="stat-box">
+                            <span class="stat-num">50%</span>
+                            <span class="stat-label">OFF RETAIL</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-num">100%</span>
+                            <span class="stat-label">EDIBLE</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-num">0</span>
+                            <span class="stat-label">WASTE</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-right">
+                    <div class="hero-art">
+                        <div class="circle">
+                            <h2 class="brand-font">UGLY</h2>
+                        </div>
+                        <div class="floating-tag">SAME<br>GREAT<br>TASTE!</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="marquee-wrap">
+            <div class="marquee-content">
+                <span>INDUSTRIAL GRADE</span><span class="star">✦</span>
+                <span>NO WASTE</span><span class="star">✦</span>
+                <span>ALL TASTE</span><span class="star">✦</span>
+                <span>LIMITED DROPS</span><span class="star">✦</span>
+                <span>DANGEROUSLY FRESH</span><span class="star">✦</span>
+                <span>RESCUE MISSION</span><span class="star">✦</span>
+                <span>UGLY IS THE NEW STANDARD</span><span class="star">✦</span>
+                <span>FRESHLY SALVAGED</span><span class="star">✦</span>
+            </div>
+            <div class="marquee-content">
+                <span>INDUSTRIAL GRADE</span><span class="star">✦</span>
+                <span>NO WASTE</span><span class="star">✦</span>
+                <span>ALL TASTE</span><span class="star">✦</span>
+                <span>LIMITED DROPS</span><span class="star">✦</span>
+                <span>DANGEROUSLY FRESH</span><span class="star">✦</span>
+                <span>RESCUE MISSION</span><span class="star">✦</span>
+                <span>UGLY IS THE NEW STANDARD</span><span class="star">✦</span>
+                <span>FRESHLY SALVAGED</span><span class="star">✦</span>
+            </div>
+        </div>
+
+        <section class="shop-section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="sub">● LIMITED DROPS // 1 ACTIVE</span>
+                    <div class="shop-title">
+                        <h2 class="brand-font">THE SNACK SHOP</h2>
+                        <button class="btn-outline">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21v-5h5"/></svg>
+                            REFRESH SYSTEM
+                        </button>
+                    </div>
+                </div>
+
+                <div class="product-grid">
+                    <div class="product-card">
+                        <div class="card-img-wrap">
+                            <span class="badge-left">FRESHLY SALVAGED</span>
+                            <span class="badge-right">-55%</span>
+                            <h3 class="brand-font" style="color: rgba(17,17,17,0.05); font-size: 80px;">CRATE_01</h3>
+                            <span class="price-tag">₱36/KG</span>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="product-name brand-font">NOODLES BY NGOSIOK DERAMI</h3>
+                            <div class="product-cat">> BROKEN NOODLES SECURED</div>
+                            
+                            <div class="pricing-grid">
+                                <div class="price-box">
+                                    <span class="p-label">MARKET RETAIL</span>
+                                    <span class="p-value">₱80</span>
+                                </div>
+                                <div class="price-box highlight">
+                                    <span class="p-label">RESCUE PRICE</span>
+                                    <span class="p-value">₱36</span>
+                                </div>
+                            </div>
+
+                            <div class="select-grid">
+                                <select>
+                                    <option>CLEAN BIHON</option>
+                                    <option>EGG NOODLES</option>
+                                    <option>MISUA</option>
+                                </select>
+                                <select>
+                                    <option>1 KG</option>
+                                    <option>5 KG</option>
+                                    <option>10 KG</option>
+                                </select>
+                            </div>
+
+                            <button class="btn-dark btn-full">
+                                ADD TO MANIFEST
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="hazard-strip"></div>
+
+    <div class="dark-mode">
+        <section class="protocol">
+            <div class="container">
+                <div class="protocol-header">
+                    <h4 class="protocol-title brand-font">THE PROTOCOL</h4>
+                    <div class="protocol-line"></div>
+                </div>
+
+                <div class="steps-grid">
+                    <div class="step-card">
+                        <div class="step-watermark">01</div>
+                        <div class="step-content">
+                            <h3 class="brand-font">SELECT</h3>
+                            <p>Pick your produce from the active drops. Choose your required quantity in KG. Add everything to your manifest.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="step-card">
+                        <div class="step-watermark">02</div>
+                        <div class="step-content">
+                            <h3 class="brand-font">SEND</h3>
+                            <p>Transfer the exact total amount via GCash to the designated terminal. Take a clear screenshot of your receipt.</p>
+                        </div>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-watermark">03</div>
+                        <div class="step-content">
+                            <h3 class="brand-font">SEAL</h3>
+                            <p>Upload the receipt to confirm your manifest. Await admin verification. Once sealed, collect at the warehouse.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <div class="container">
+                <div class="footer-grid">
+                    <div class="footer-logo-block">
+                        <div class="footer-logo brand-font">UGLYPH</div>
+                        <p class="footer-desc">Rescuing imperfect harvest from farm waste. Supplying industrial grade produce to Manila's food makers.</p>
+                        <div class="status-badge">
+                            SYSTEM SECURED // MANILA NODE
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="footer-title brand-font">QUICK ACCESS</h4>
+                        <ul class="footer-list links">
+                            <li><a href="#">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                Home Base
+                            </a></li>
+                            <li><a href="#">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                Supplier Portal
+                            </a></li>
+                            <li><a href="#">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                Comms Center
+                            </a></li>
+                            <li><a href="#">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                Terms of Service
+                            </a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="footer-title brand-font">MANIFEST LOGS</h4>
+                        <ul class="footer-list system-logs mono-font">
+                            <li>[ENCRYPTION] <br><span>AES-256-GCM SECURED</span></li>
+                            <li>[NETWORK] <br><span>DISTRIBUTED_RESCUE V2</span></li>
+                            <li>[UPTIME] <br><span>99.98% OPERATIONAL</span></li>
+                            <li>[WARNING] <br><span style="color: var(--yellow);">DANGEROUSLY_FRESH</span></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="footer-bottom">
+                    <div class="copyright mono-font">© 2026 UGLY.PH // NO WASTE // ALL TASTE</div>
+                    <div class="footer-badges mono-font">
+                        <span>DESIGN: ODC</span>
+                        <span>PWR: ANTIGRAVITY</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+</body>
+</html>
