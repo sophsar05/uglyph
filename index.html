@@ -7,572 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    
-    <style>
-        /* --- CSS VARIABLES --- */
-        :root {
-            --yellow: #FFD600;
-            --black: #111111;
-            --white: #FFFFFF;
-            --red: #D32F2F;
-            --grey: #E5E5E5;
-            --border-width: 3px;
-            --brutal-shadow: 6px 6px 0px var(--black);
-            --brutal-shadow-hover: 10px 10px 0px var(--black);
-            --brutal-shadow-active: 2px 2px 0px var(--black);
-            --grid-pattern: linear-gradient(rgba(17, 17, 17, 0.05) 1px, transparent 1px),
-                            linear-gradient(90deg, rgba(17, 17, 17, 0.05) 1px, transparent 1px);
-        }
-
-        /* --- GLOBAL RESET --- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            cursor: crosshair;
-        }
-
-        html { scroll-behavior: smooth; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--yellow);
-            color: var(--black);
-            line-height: 1.5;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        h1, h2, h3, .brand-font {
-            font-family: 'Anton', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .mono-font {
-            font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;
-        }
-
-        /* --- UTILITY --- */
-        .container {
-            max-width: 1350px;
-            margin: 0 auto;
-            padding: 0 40px;
-        }
-
-        .btn-dark {
-            background: var(--black);
-            color: var(--yellow);
-            border: var(--border-width) solid var(--black);
-            padding: 12px 28px;
-            font-weight: 900;
-            font-size: 14px;
-            text-transform: uppercase;
-            transition: all 0.15s ease-out;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            box-shadow: var(--brutal-shadow);
-            text-align: center;
-            cursor: pointer;
-        }
-
-        .btn-dark:hover {
-            transform: translate(-4px, -4px);
-            box-shadow: var(--brutal-shadow-hover);
-            color: var(--white);
-        }
-
-        .btn-dark:active {
-            transform: translate(2px, 2px);
-            box-shadow: var(--brutal-shadow-active);
-        }
-
-        .btn-dark .mobile-icon { display: none; }
-
-        .hazard-strip {
-            height: 24px;
-            width: 100%;
-            background: repeating-linear-gradient(
-                45deg,
-                var(--black),
-                var(--black) 24px,
-                var(--yellow) 24px,
-                var(--yellow) 48px
-            );
-            border-top: var(--border-width) solid var(--black);
-            border-bottom: var(--border-width) solid var(--black);
-            animation: slideHazard 20s linear infinite;
-            position: relative;
-            z-index: 10;
-        }
-
-        @keyframes slideHazard {
-            from { background-position: 0 0; }
-            to { background-position: 100vw 0; }
-        }
-
-        /* --- HEADER --- */
-        header {
-            border-bottom: var(--border-width) solid var(--black);
-            padding: 0 40px;
-            height: 80px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--yellow);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .logo { font-size: 38px; line-height: 1; letter-spacing: 2px; }
-        .header-actions { display: flex; gap: 20px; }
-
-        /* --- HERO SECTION --- */
-        .hero-wrapper {
-            background-image: var(--grid-pattern);
-            background-size: 40px 40px;
-            border-bottom: var(--border-width) solid var(--black);
-        }
-
-        .hero {
-            padding: 100px 0;
-            min-height: 85vh;
-            display: grid;
-            grid-template-columns: 1.1fr 1fr;
-            gap: 60px;
-            align-items: center;
-        }
-
-        .hero-tags { display: flex; gap: 12px; margin-bottom: 30px; flex-wrap: wrap; }
-        .tag-dark { 
-            background: var(--white); color: var(--black); padding: 6px 14px; 
-            font-size: 12px; font-weight: 900; border: 2px solid var(--black); 
-            box-shadow: 3px 3px 0px var(--black);
-        }
-
-        .hero-title { 
-            font-size: clamp(60px, 8vw, 140px); 
-            line-height: 1.15; margin-bottom: 30px; color: var(--black);
-        }
-
-        .hero-title .highlight { 
-            background: var(--black); color: var(--yellow); padding: 5px 20px; 
-            display: inline-block; border: var(--border-width) solid var(--black);
-            box-shadow: 8px 8px 0px rgba(17,17,17,0.2);
-            animation: stampDrop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, 
-                       pulseShadow 2s infinite ease-in-out alternate;
-            transform-origin: center;
-            margin: 0.3em 0.5em 0.5em;
-            line-height: 1.1;
-        }
-
-        @keyframes stampDrop {
-            0% { transform: scale(2) rotate(-15deg) translateY(-20px); opacity: 0; }
-            100% { transform: scale(1) rotate(-4deg) translateY(0); opacity: 1; }
-        }
-        @keyframes pulseShadow {
-            0% { box-shadow: 6px 6px 0px var(--black); }
-            100% { box-shadow: 12px 12px 0px var(--black); }
-        }
-        
-        .hero-desc { 
-            font-weight: 700; font-size: 20px; max-width: 500px; 
-            margin-bottom: 45px; text-transform: uppercase; color: rgba(17, 17, 17, 0.85); 
-            line-height: 1.4; border-left: 4px solid var(--black); padding-left: 20px;
-        }
-        
-        .hero-stats { display: flex; gap: 20px; margin-top: 60px; }
-        .stat-box { 
-            background: var(--white); border: var(--border-width) solid var(--black); 
-            padding: 20px 15px; text-align: center; width: 120px; 
-            box-shadow: var(--brutal-shadow); transition: transform 0.2s ease;
-        }
-        .stat-box:hover { transform: translateY(-5px); }
-        .stat-num { font-family: 'Anton', sans-serif; font-size: 40px; display: block; line-height: 1; margin-bottom: 5px; }
-        .stat-label { font-size: 11px; font-weight: 900; letter-spacing: 0.5px; }
-
-        .hero-art {
-            border: var(--border-width) solid var(--black); height: 480px; position: relative; 
-            display: flex; justify-content: center; align-items: center;
-            background-color: var(--yellow);
-            background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(17,17,17,0.04) 10px, rgba(17,17,17,0.04) 20px);
-            box-shadow: 16px 16px 0px var(--black); width: 100%;
-        }
-        .hero-art .circle { border: 4px dashed rgba(17, 17, 17, 0.5); width: 65%; height: 80%; border-radius: 50%; display: flex; justify-content: center; align-items: center; animation: spinSlow 40s linear infinite; }
-        @keyframes spinSlow { 100% { transform: rotate(360deg); } }
-        .hero-art h2 { font-size: clamp(60px, 10vw, 140px); color: rgba(17, 17, 17, 0.1); animation: spinSlow 40s linear infinite reverse; }
-        
-        .floating-tag { 
-            position: absolute; top: -20px; right: -20px; background: var(--white); 
-            border: var(--border-width) solid var(--black); padding: 15px 20px; 
-            font-weight: 900; font-size: 14px; text-align: center; line-height: 1.2;
-            box-shadow: var(--brutal-shadow); animation: float 4s ease-in-out infinite; z-index: 10;
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(8deg); }
-            50% { transform: translateY(-15px) rotate(12deg); }
-        }
-
-        /* --- MARQUEE --- */
-        .marquee-wrap { background: var(--black); color: var(--yellow); padding: 20px 0; overflow: hidden; white-space: nowrap; display: flex; align-items: center; }
-        .marquee-content { display: inline-block; animation: marqueeScroll 40s linear infinite; font-family: 'Anton', sans-serif; font-size: 24px; letter-spacing: 1px; }
-        .marquee-content span { margin: 0 30px; vertical-align: middle; }
-        .marquee-content .star { color: rgba(255, 214, 0, 0.4); font-size: 18px; font-family: 'Inter', sans-serif; }
-        @keyframes marqueeScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-
-        /* --- SHOP SECTION --- */
-        .shop-section { padding: 120px 0; background: var(--grey); border-top: var(--border-width) solid var(--black); }
-        .section-header { margin-bottom: 60px; }
-        .section-header .sub { background: var(--black); color: var(--yellow); display: inline-block; padding: 6px 14px; font-size: 13px; font-weight: 900; margin-bottom: 20px; box-shadow: 3px 3px 0px rgba(0,0,0,0.2); }
-        .shop-title { font-size: 80px; display: flex; justify-content: space-between; align-items: center; line-height: 1;}
-        
-        .btn-outline { background: var(--white); border: var(--border-width) solid var(--black); padding: 12px 24px; font-weight: 900; font-size: 16px; transition: all 0.2s; box-shadow: var(--brutal-shadow); display: flex; align-items: center; gap: 8px; justify-content: center; cursor: pointer;}
-        .btn-outline:hover { background: var(--yellow); transform: translate(-2px, -2px); box-shadow: 8px 8px 0px var(--black); }
-        
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 50px; }
-        .product-card { border: var(--border-width) solid var(--black); background: var(--white); display: flex; flex-direction: column; box-shadow: 12px 12px 0px var(--black); transition: transform 0.2s; width: 100%; position: relative;}
-        .product-card:hover { transform: translateY(-8px); box-shadow: 16px 16px 0px var(--black); }
-        
-        .card-img-wrap { 
-            height: 360px; background-color: var(--white);
-            background-image: var(--grid-pattern); background-size: 20px 20px;
-            position: relative; display: flex; justify-content: center; align-items: center; 
-            border-bottom: var(--border-width) solid var(--black); overflow: hidden; 
-            padding: 0;
-        }
-        .card-img-wrap::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 16px; background: repeating-linear-gradient(45deg, var(--black), var(--black) 10px, var(--yellow) 10px, var(--yellow) 20px); border-bottom: 2px solid var(--black);}
-        .badge-left { position: absolute; top: 30px; left: 20px; background: var(--black); color: var(--yellow); padding: 6px 12px; font-size: 12px; font-weight: 900; border: 2px solid var(--black); }
-        .badge-right { position: absolute; top: 30px; right: 20px; background: var(--red); color: var(--white); padding: 6px 12px; font-size: 14px; font-weight: 900; border: 2px solid var(--black); box-shadow: 3px 3px 0px var(--black); transform: rotate(5deg);}
-        .price-tag { position: absolute; bottom: 15px; right: 15px; background: var(--yellow); color: var(--black); padding: 8px 16px; font-size: 20px; font-family: 'Anton', sans-serif; border: var(--border-width) solid var(--black); box-shadow: 5px 5px 0px var(--black); }
-        
-        .card-body { padding: 35px; }
-        .product-name { font-size: 32px; line-height: 1.1; margin-bottom: 10px; }
-        .product-cat { font-size: 13px; color: #555; margin-bottom: 30px; font-weight: 900; letter-spacing: 1px;}
-        
-        .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-        .price-box { border: 2px solid #ddd; padding: 15px; background: #fafafa; }
-        .price-box.highlight { border: var(--border-width) solid var(--black); background: var(--yellow); transform: scale(1.05); transform-origin: left center; box-shadow: 4px 4px 0px rgba(0,0,0,0.1); }
-        .p-label { font-size: 11px; font-weight: 900; display: block; margin-bottom: 5px; color: #666; }
-        .price-box.highlight .p-label { color: var(--black); }
-        .p-value { font-size: 28px; font-family: 'Anton', sans-serif; }
-        .price-box:not(.highlight) .p-value { color: #aaa; text-decoration: line-through; }
-        
-        .select-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 30px; }
-        .select-grid select { padding: 15px; border: var(--border-width) solid var(--black); font-weight: 900; width: 100%; outline: none; appearance: none; background: var(--grey) url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23111111%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E") no-repeat right 15px top 50%; background-size: 14px auto; transition: background-color 0.2s; cursor: pointer;}
-        .select-grid select:hover { background-color: var(--yellow); }
-        .btn-full { width: 100%; padding: 18px; font-size: 18px; }
-
-        .tap-hint { display: none; }
-        .close-expanded { display: none; }
-
-        /* --- DESKTOP DARK MODE & FOOTER --- */
-        .dark-mode { background: var(--black); color: var(--white); position: relative; }
-        
-        .desktop-protocol { padding: 120px 0; position: relative; }
-        .desktop-protocol::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; }
-        .protocol-header { display: flex; align-items: center; gap: 30px; margin-bottom: 70px; position: relative; z-index: 2;}
-        .protocol-title { color: var(--yellow); font-size: 50px; margin: 0; }
-        .protocol-line { flex: 1; height: 2px; background: repeating-linear-gradient(90deg, #333, #333 10px, transparent 10px, transparent 20px); }
-        .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; position: relative; z-index: 2;}
-        .step-card { background: rgba(17, 17, 17, 0.8); border: 2px solid #333; padding: 50px 40px; position: relative; transition: all 0.3s ease; overflow: hidden; backdrop-filter: blur(5px); }
-        .step-card:hover { border-color: var(--yellow); transform: translateY(-5px); box-shadow: 8px 8px 0px rgba(255, 214, 0, 0.1); }
-        .step-watermark { position: absolute; right: 10px; bottom: -20px; font-family: 'Anton', sans-serif; font-size: 180px; line-height: 1; color: transparent; -webkit-text-stroke: 2px #222; z-index: 0; transition: all 0.3s ease; }
-        .step-card:hover .step-watermark { -webkit-text-stroke: 2px rgba(255, 214, 0, 0.2); transform: scale(1.05); }
-        .step-content { position: relative; z-index: 1; }
-        .step-card h3 { font-size: 32px; line-height: 1.1; margin-bottom: 20px; color: var(--white); display: inline-block; border-bottom: 2px solid var(--yellow); padding-bottom: 5px; }
-        .step-card p { font-size: 15px; color: #aaa; font-weight: 500; line-height: 1.6; }
-
-        .desktop-footer { background: var(--black); padding: 80px 0 40px; border-top: 2px solid #333; position: relative; }
-        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 60px; border-bottom: 1px solid #333; padding-bottom: 60px; margin-bottom: 40px; }
-        .footer-logo-block .footer-logo { color: var(--white); font-size: 60px; margin-bottom: 15px; letter-spacing: 2px; }
-        .footer-desc { color: #888; font-size: 15px; max-width: 350px; margin-bottom: 30px; line-height: 1.6; }
-        .status-badge { display: inline-flex; align-items: center; gap: 10px; background: rgba(255, 214, 0, 0.1); border: 1px solid var(--yellow); padding: 8px 16px; color: var(--yellow); font-size: 12px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; }
-        .status-badge::before { content: ''; display: block; width: 8px; height: 8px; background: var(--yellow); border-radius: 50%; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 214, 0, 0.7); } 70% { opacity: 0.5; box-shadow: 0 0 0 5px rgba(255, 214, 0, 0); } 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 214, 0, 0); } }
-        .footer-title { font-size: 18px; color: var(--white); margin-bottom: 30px; letter-spacing: 1px; position: relative; padding-left: 15px; }
-        .footer-title::before { content: ''; position: absolute; left: 0; top: 5px; bottom: 5px; width: 4px; background: var(--yellow); }
-        .footer-list { list-style: none; }
-        .footer-list.links li { margin-bottom: 15px; }
-        .footer-list.links li a { color: #888; text-decoration: none; transition: all 0.2s ease; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
-        .footer-list.links li a:hover { color: var(--yellow); transform: translateX(5px); }
-        .system-logs li { color: #666; font-size: 13px; margin-bottom: 12px; border-bottom: 1px dashed #333; padding-bottom: 12px; }
-        .system-logs li:last-child { border-bottom: none; }
-        .system-logs li span { color: #aaa; }
-        .footer-bottom { display: flex; justify-content: space-between; align-items: center; }
-        .copyright { font-size: 14px; color: #666; font-weight: 700; }
-        .footer-badges { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;}
-        .footer-badges span { border: 1px solid #444; color: #888; padding: 8px 14px; font-size: 12px; font-weight: 900; letter-spacing: 0.5px; background: rgba(255,255,255,0.02); }
-
-        /* --- MOBILE ONLY COMPONENTS (HIDDEN ON DESKTOP) --- */
-        .mobile-protocol { display: none; }
-
-        /* --- MODALS --- */
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(17, 17, 17, 0.85); backdrop-filter: blur(4px); z-index: 1000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
-        .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        .modal-content { background: var(--white); border: var(--border-width) solid var(--black); padding: 40px; width: 90%; max-width: 450px; box-shadow: 16px 16px 0px var(--black); position: relative; transform: translateY(20px); transition: transform 0.3s ease; background-image: var(--grid-pattern); background-size: 20px 20px; }
-        .modal-overlay.active .modal-content { transform: translateY(0); }
-        .close-btn { position: absolute; top: -15px; right: -15px; background: var(--red); color: var(--white); border: var(--border-width) solid var(--black); width: 45px; height: 45px; font-size: 22px; font-weight: 900; cursor: pointer; box-shadow: 4px 4px 0px var(--black); transition: all 0.2s; display: flex; align-items: center; justify-content: center; padding-bottom: 3px; z-index: 10; }
-        .close-btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px var(--black); }
-        
-        .modal-header { margin-bottom: 30px; background: var(--white); padding: 15px; border: var(--border-width) solid var(--black); text-align: center; }
-        .modal-header h2 { font-size: 36px; line-height: 1; margin-bottom: 10px; }
-        .sub-badge { background: var(--black); color: var(--yellow); padding: 4px 8px; font-size: 11px; font-weight: 900; letter-spacing: 1px; display: inline-block; }
-        
-        .input-group { margin-bottom: 20px; background: var(--white); }
-        .input-group label { display: block; font-weight: 700; margin-bottom: 8px; font-size: 14px; color: var(--black);}
-        .input-group input { width: 100%; padding: 15px; border: var(--border-width) solid var(--black); font-size: 16px; outline: none; transition: all 0.2s; background: #fafafa; }
-        .input-group input:focus { background: var(--yellow); box-shadow: 6px 6px 0px var(--black); transform: translate(-2px, -2px); }
-        .status-text { margin-top: 20px; text-align: center; font-size: 13px; font-weight: 700; height: 20px; transition: color 0.2s;}
-        .status-error { color: var(--red); }
-        
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-10px); } 40%, 80% { transform: translateX(10px); } }
-        .shake-active { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-
-        /* --- MANIFEST SIDEBAR (CART) --- */
-        .manifest-sidebar { position: fixed; top: 0; right: -100%; width: 100%; max-width: 450px; height: 100vh; background: var(--black); border-left: var(--border-width) solid var(--yellow); z-index: 1001; transition: right 0.3s cubic-bezier(0.165, 0.84, 0.44, 1); display: flex; flex-direction: column; color: var(--white); box-shadow: -10px 0 20px rgba(0,0,0,0.5); }
-        .manifest-sidebar.active { right: 0; }
-        .sidebar-header { padding: 30px; border-bottom: 2px dashed #333; display: flex; justify-content: space-between; align-items: center; background: repeating-linear-gradient(45deg, #111, #111 10px, #1a1a1a 10px, #1a1a1a 20px); }
-        .sidebar-header h2 { font-size: 32px; color: var(--yellow); margin: 0; line-height: 1;}
-        .sidebar-header .close-btn { position: static; background: var(--yellow); color: var(--black); }
-        
-        .sidebar-content { padding: 30px; flex-grow: 1; overflow-y: auto; background: var(--black); }
-        .sidebar-content::-webkit-scrollbar { width: 8px; }
-        .sidebar-content::-webkit-scrollbar-track { background: #111; }
-        .sidebar-content::-webkit-scrollbar-thumb { background: #333; border-radius: 0; }
-        
-        .sidebar-footer { padding: 30px; border-top: 2px solid #333; background: #1a1a1a; }
-        .total-row { display: flex; justify-content: space-between; font-size: 24px; font-weight: 700; margin-bottom: 20px; color: var(--yellow); }
-        
-        .manifest-item { border: 2px solid #333; padding: 20px; margin-bottom: 15px; background: rgba(255,255,255,0.02); transition: border-color 0.2s; }
-        .manifest-item:hover { border-color: var(--yellow); }
-        .manifest-item-title { font-weight: 900; font-size: 18px; margin-bottom: 10px; color: var(--yellow); }
-        .manifest-item-details { display: flex; justify-content: space-between; font-size: 14px; color: #aaa; margin-bottom: 15px;}
-        
-        .manifest-item-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;}
-        .qty-control { display: flex; align-items: center; border: 2px solid #555; background: #111;}
-        .qty-btn { background: transparent; color: var(--white); border: none; width: 30px; height: 30px; font-weight: 900; cursor: pointer; transition: all 0.2s; display: flex; justify-content: center; align-items: center; }
-        .qty-btn:hover { background: var(--yellow); color: var(--black); }
-        .qty-val { padding: 0 10px; font-size: 13px; font-weight: 700; color: #ddd; min-width: 50px; text-align: center; border-left: 2px solid #555; border-right: 2px solid #555; }
-        
-        .remove-btn { margin-left: auto; background: transparent; color: #aaa; border: 2px dashed #555; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-        .remove-btn:hover { background: var(--red); color: var(--white); border-style: solid; border-color: var(--red); transform: translate(-2px, -2px); box-shadow: 4px 4px 0px rgba(0,0,0,0.5);}
-
-        /* --- RESPONSIVE TABLETS --- */
-        @media (max-width: 1024px) {
-            .hero { grid-template-columns: 1fr; text-align: center; gap: 50px; padding: 80px 0;}
-            .hero-desc { margin: 0 auto 40px; border-left: none; padding-left: 0; }
-            .hero-stats { justify-content: center; }
-            .hero-tags { justify-content: center; }
-            .shop-title { font-size: 60px; }
-            .steps-grid { grid-template-columns: 1fr; }
-        }
-        
-        @media (max-width: 900px) {
-            .footer-grid { grid-template-columns: 1fr; gap: 50px; }
-            .shop-title { flex-direction: column; align-items: flex-start; gap: 20px; font-size: 50px; }
-            .footer-bottom { flex-direction: column; gap: 20px; text-align: center; }
-        }
-
-        /* --- MOBILE SPECIFIC RESPONSIVENESS (< 600px) --- */
-        @media (max-width: 600px) {
-            .container { padding: 0 20px; }
-            
-            header { padding: 0 15px; flex-direction: row; justify-content: space-between; height: 70px; }
-            .logo { font-size: 26px; } 
-            .header-actions { width: auto; gap: 8px; }
-            .btn-dark { padding: 10px 12px; gap: 5px;}
-            .btn-dark .btn-text { display: none; } 
-            .btn-dark .mobile-icon { display: block; width: 18px; height: 18px; }
-            #openManifestBtn { padding-right: 12px; } 
-
-            .hero { padding: 40px 0; gap: 30px;}
-            .hero-title { font-size: 46px; line-height: 1.1; margin-bottom: 20px; }
-            .hero-title .highlight { padding: 4px 12px; margin-top: 5px; }
-            .hero-desc { font-size: 15px; margin-bottom: 30px; }
-            
-            .hero-stats { flex-direction: row; flex-wrap: nowrap; gap: 10px; margin-top: 30px; justify-content: space-between; }
-            .stat-box { width: 33.33%; padding: 15px 5px; box-shadow: 4px 4px 0px var(--black); }
-            .stat-num { font-size: 22px; margin-bottom: 2px; }
-            .stat-label { font-size: 9px; }
-
-            .hero-art { height: 220px; box-shadow: 8px 8px 0px var(--black); }
-            .hero-art h2 { font-size: 48px; }
-            /* 1. FIXED SPINNING OVAL (made perfect circle) */
-            .hero-art .circle { width: 150px; height: 150px; }
-            
-            .floating-tag { right: -5px; top: -10px; font-size: 11px; padding: 8px 12px; }
-
-            .shop-section { padding: 60px 0; }
-            .shop-title { font-size: 42px; margin-bottom: 15px; }
-            .btn-outline { width: 100%; }
-            
-            .product-grid { grid-template-columns: 1fr; gap: 30px; }
-            .product-card { box-shadow: 8px 8px 0px var(--black); cursor: pointer;}
-            .product-card:hover { transform: none; box-shadow: 8px 8px 0px var(--black); }
-            
-            /* 2. MADE SHOP GRID SMALLER ON MOBILE */
-            .card-img-wrap { height: 200px; background-size: 10px 10px; }
-            
-            .card-img-wrap h3 { font-size: 50px !important; }
-            .badge-left { top: 15px; left: 15px; font-size: 10px; padding: 5px 8px; }
-            .badge-right { top: 15px; right: 15px; font-size: 11px; padding: 5px 8px; }
-            .price-tag { bottom: 15px; right: 15px; font-size: 18px; padding: 8px 14px; }
-            
-            .card-body { padding: 20px; }
-            .product-name { font-size: 24px; margin-bottom: 8px; }
-            .product-cat { font-size: 11px; margin-bottom: 20px; }
-            
-            .pricing-grid, .select-grid, #addToManifestBtn { display: none; }
-            .tap-hint { display: block; font-size: 11px; text-align: center; font-weight: 900; color: #888; margin-top: 15px; border-top: 2px dashed #ddd; padding-top: 10px; }
-
-            .product-card.expanded { grid-column: span 1; box-shadow: 12px 12px 0px var(--black); cursor: default; border-color: var(--yellow); }
-            .product-card.expanded .card-img-wrap { height: 260px; background-size: 10px 10px; }
-            .product-card.expanded .product-name { font-size: 28px; }
-            .product-card.expanded .pricing-grid { display: grid; grid-template-columns: 1fr; margin-top: 20px;}
-            .product-card.expanded .select-grid { display: grid; grid-template-columns: 1fr; }
-            .product-card.expanded .price-box.highlight { transform: scale(1); }
-            .product-card.expanded #addToManifestBtn { display: flex; }
-            .product-card.expanded .tap-hint { display: none; }
-            .product-card.expanded .close-expanded { display: flex; position: absolute; top: 10px; left: 10px; z-index: 20; background: var(--red); color: var(--white); border: 2px solid var(--black); width: 35px; height: 35px; align-items: center; justify-content: center; font-weight: 900; font-size: 16px; box-shadow: 3px 3px 0px var(--black); cursor: pointer; }
-            .product-card.expanded .badge-left { display: none; }
-
-            /* --- DESKTOP AND MOBILE COMPONENTS --- */
-            .desktop-protocol { display: none !important; }
-            .mobile-protocol { display: block; margin: 60px 0; }
-            
-            /* 3. REPLACED BASIC MOBILE FOOTER WITH SCALED DOWN PC FOOTER */
-            .desktop-footer { padding: 50px 0 30px; }
-            .footer-grid { grid-template-columns: 1fr; gap: 40px; padding-bottom: 30px; margin-bottom: 30px; border-bottom: 1px solid #333; }
-            .footer-logo-block .footer-logo { font-size: 48px; margin-bottom: 10px; }
-            .footer-desc { font-size: 14px; max-width: 100%; }
-            .status-badge { font-size: 10px; padding: 6px 12px; }
-            .footer-bottom { flex-direction: column; text-align: center; gap: 20px; }
-            .footer-badges { justify-content: center; }
-            
-            .modal-content { padding: 30px 20px; width: 95%;}
-            .modal-header h2 { font-size: 28px; }
-            .sidebar-header { padding: 20px; }
-            .sidebar-header h2 { font-size: 26px; }
-            .sidebar-content { padding: 20px; }
-            .sidebar-footer { padding: 20px; }
-            .manifest-item-controls { flex-direction: column; align-items: stretch; gap: 15px;}
-            .qty-control { justify-content: space-between; }
-            .qty-val { flex-grow: 1; }
-            .remove-btn { margin-left: 0; width: 100%; text-align: center;}
-        }
-
-        @media (max-width: 600px) {
-            .mobile-protocol { 
-                display: block;
-                padding: 40px 30px; 
-                margin: 50px 0 60px 0; /* Increased top margin from 60px to 100px */
-                position: relative; 
-                z-index: 10; 
-            }
-
-            .mobile-protocol .protocol-box {
-                border: 2px solid #333;
-                background-color: rgba(17, 17, 17, 0.8);
-                box-shadow: 8px 8px 0px rgba(255, 214, 0, 0.1);
-                width: 100%;
-                position: relative;
-                padding: 20px 30px;
-                backdrop-filter: blur(5px);
-            }
-            
-            /* Dark grid texture */
-            .mobile-protocol .protocol-box::before {
-                content: ''; position: absolute; inset: 0;
-                background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), 
-                                  linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); 
-                background-size: 18px 15px; 
-                pointer-events: none; z-index: 0;
-            }
-            
-            .mobile-protocol .protocol-header {
-                background-color: var(--black);
-                color: var(--yellow);
-                padding: 40px 30px; /* Reduced vertical padding */
-                font-family: 'JetBrains Mono', monospace;
-                border-bottom: 1px dashed #333;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-                position: relative; z-index: 2;
-            }
-            
-            .mobile-protocol .ph-title { 
-                display: flex; 
-                align-items: center; 
-                gap: 10px; 
-                font-weight: 900; 
-                font-size: 15px; 
-                color: var(--yellow); /* Explicitly forcing yellow so it doesn't turn white */
-            }
-
-            .mobile-protocol .ph-status { 
-                background: var(--yellow); /* Swapped to yellow */
-                color: var(--black); /* Swapped to black */
-                padding: 4px 8px; 
-                font-size: 11px; 
-                font-weight: 900; 
-                box-shadow: 3px 3px 0px rgba(0,0,0,0.6);
-            }
-            
-            .mobile-protocol .protocol-list { display: flex; flex-direction: column; position: relative; z-index: 2;}
-            
-            .mobile-protocol .p-item {
-                padding: 14px 20px; /* Reduced vertical padding */
-                border-bottom: 1px dashed #333;
-                display: flex;
-                align-items: flex-start;
-                gap: 15px;
-                background: transparent;
-                transition: background-color 0.2s;
-            }
-
-            .mobile-protocol .p-item:last-child { border-bottom: none; }
-            
-            /* Active step highlight */
-            .mobile-protocol .p-item.active { 
-                background-color: rgba(255, 214, 0, 0.05); 
-                border-left: 4px solid var(--yellow);
-            }
-            
-            .mobile-protocol .p-check {
-                width: 28px; height: 28px;
-                border: 2px solid #444;
-                background: #111;
-                display: flex; justify-content: center; align-items: center;
-                flex-shrink: 0; margin-top: 2px;
-            }
-            .mobile-protocol .p-item.active .p-check { 
-                border-color: var(--yellow); 
-                background: var(--yellow); 
-                color: var(--black); 
-                box-shadow: 4px 4px 0px rgba(0,0,0,0.5); 
-            }
-            
-            .mobile-protocol .p-content { flex-grow: 1; }
-            .mobile-protocol .p-title {
-                font-family: 'JetBrains Mono', monospace;
-                font-weight: 900; color: #777;
-                font-size: 14px; text-transform: uppercase; margin-bottom: 6px; line-height: 1.2;
-            }
-            .mobile-protocol .p-item.active .p-title { color: var(--yellow); }
-            
-            .mobile-protocol .p-desc {
-                font-size: 13px; color: #aaa; font-weight: 500; line-height: 1.4;
-            }
-            .mobile-protocol .p-item.active .p-desc { color: var(--white); }
-        }
-    </style>
+    <link rel="stylesheet" href="index.css?v=3">
 </head>
 <body>
 
@@ -663,56 +98,16 @@
                     <span class="sub">● SURPLUS DEALS // FRESH STOCK</span>
                     <div class="shop-title">
                         <h2 class="brand-font">SURPLUS MARKET</h2>
-                        <button class="btn-outline">
+                        <button class="btn-outline" onclick="fetchInventory()">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21v-5h5"/></svg>
-                            NEW SURPLUS STOCK
+                            REFRESH STOCK
                         </button>
                     </div>
                 </div>
 
-                <div class="product-grid">
-                    <div class="product-card" onclick="toggleCard(this, event)">
-                        <div class="close-expanded" onclick="closeCard(this, event)">✖</div>
-                        
-                        <div class="card-img-wrap" style="display: flex; align-items: center; justify-content: center; width: 100%;">
-                            <span class="badge-right">-55%</span>
-                            <img src="./images/century-tuna-logo.png" alt="Century Tuna Logo" class="product-img" style="width: 100%; height: 100%; object-fit: contain; display: block;">
-                            <span class="price-tag">₱36 / KG</span>
-                        </div>
-                        <div class="card-body">
-                            <h3 class="product-name brand-font">CENTURY TUNA</h3>
-                            
-                            <div class="pricing-grid">
-                                <div class="price-box">
-                                    <span class="p-label">REGULAR PRICE</span>
-                                    <span class="p-value">₱80</span>
-                                </div>
-                                <div class="price-box highlight">
-                                    <span class="p-label">SURPLUS PRICE</span>
-                                    <span class="p-value">₱36</span>
-                                </div>
-                            </div>
-
-                            <div class="select-grid">
-                                <select id="productType">
-                                    <option value="FLAKES IN OIL">FLAKES IN OIL</option>
-                                    <option value="CHUNKS IN WATER">CHUNKS IN WATER</option>
-                                    <option value="VARIETY PACK">VARIETY PACK</option>
-                                </select>
-                                <select id="productWeight">
-                                    <option value="1">1 KG</option>
-                                    <option value="5">5 KG</option>
-                                    <option value="10">10 KG</option>
-                                </select>
-                            </div>
-
-                            <button id="addToManifestBtn" class="btn-dark btn-full">
-                                ADD TO MANIFEST
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
-                            </button>
-
-                            <div class="tap-hint mono-font">TAP FOR DETAILS ▼</div>
-                        </div>
+                <div class="product-grid" id="productGrid">
+                    <div class="mono-font" style="grid-column: 1/-1; text-align: center; padding: 50px;">
+                        > INITIALIZING SYSTEM... LOADING STOCK...
                     </div>
                 </div>
             </div>
@@ -778,7 +173,6 @@
                             <div class="p-desc">Pick items, set KG quantity, and add to your manifest.</div>
                         </div>
                     </div>
-                    
                     <div class="p-item">
                         <div class="p-check"></div>
                         <div class="p-content">
@@ -786,7 +180,6 @@
                             <div class="p-desc">Transfer the exact total amount to the designated terminal.</div>
                         </div>
                     </div>
-                    
                     <div class="p-item">
                         <div class="p-check"></div>
                         <div class="p-content">
@@ -794,7 +187,6 @@
                             <div class="p-desc">Seal your manifest by attaching a clear screenshot of payment.</div>
                         </div>
                     </div>
-                    
                     <div class="p-item">
                         <div class="p-check"></div>
                         <div class="p-content">
@@ -849,21 +241,36 @@
         <div class="modal-content">
             <button class="close-btn" id="closeLoginBtn">✖</button>
             <div class="modal-header">
-                <h2 class="brand-font">TERMINAL ACCESS</h2>
+                <h2 id="authTitle" class="brand-font">SUPPLIER LOGIN</h2>
                 <span class="sub-badge mono-font">AUTHORIZED PERSONNEL ONLY</span>
             </div>
             <form id="loginForm">
                 <div class="input-group">
-                    <label class="mono-font">> SUPPLIER_ID</label>
-                    <input type="text" class="mono-font" required placeholder="ENTER ID...">
+                    <label class="mono-font">> EMAIL_ID</label>
+                    <input type="email" id="authEmail" class="mono-font" required placeholder="ENTER EMAIL...">
                 </div>
                 <div class="input-group">
                     <label class="mono-font">> PASSKEY</label>
-                    <input type="password" class="mono-font" required placeholder="••••••••">
+                    <input type="password" id="authPassword" class="mono-font" required placeholder="••••••••">
                 </div>
-                <button type="submit" class="btn-dark btn-full" style="font-size: 18px; padding: 15px;">
+
+                <div id="signupFields" style="display: none;">
+                    <div class="input-group">
+                        <label class="mono-font">> BUSINESS_NAME</label>
+                        <input type="text" id="businessName" class="mono-font" placeholder="LEGAL ENTITY NAME...">
+                    </div>
+                    <div class="input-group">
+                        <label class="mono-font">> CONTACT_NUMBER</label>
+                        <input type="text" id="contactNumber" class="mono-font" placeholder="09XX XXX XXXX">
+                    </div>
+                </div>
+
+                <button type="submit" id="authSubmitBtn" class="btn-dark btn-full" style="font-size: 18px; padding: 15px;">
                     AUTHENTICATE
                 </button>
+                <p class="mono-font" style="margin-top: 20px; font-size: 12px; cursor: pointer; text-align: center; text-decoration: underline; opacity: 0.7;">
+                    <span id="authToggle">DON'T HAVE AN ACCOUNT? SIGN UP</span>
+                </p>
             </form>
             <div id="loginStatus" class="mono-font status-text"></div>
         </div>
@@ -883,206 +290,13 @@
                 <span>TOTAL:</span>
                 <span id="manifestTotal">₱0</span>
             </div>
-            <button class="btn-dark btn-full" style="background: var(--yellow); color: var(--black); font-size: 18px; padding: 18px;">
+            <button id="sealManifestBtn" class="btn-dark btn-full" style="background: var(--yellow); color: var(--black); font-size: 18px; padding: 18px;">
                 SEAL MANIFEST
             </button>
         </div>
     </div>
-
-    <script>
-        const sharedOverlay = document.getElementById('sharedOverlay');
-        const loginBtn = document.getElementById('openLoginBtn');
-        const closeLoginBtn = document.getElementById('closeLoginBtn');
-        const loginModal = document.getElementById('loginModal');
-        const loginForm = document.getElementById('loginForm');
-        const statusText = document.getElementById('loginStatus');
-
-        const openManifestBtn = document.getElementById('openManifestBtn');
-        const closeManifestBtn = document.getElementById('closeManifestBtn');
-        const manifestSidebar = document.getElementById('manifestSidebar');
-        const addToManifestBtn = document.getElementById('addToManifestBtn');
-        
-        const productType = document.getElementById('productType');
-        const productWeight = document.getElementById('productWeight');
-        const manifestItemsContainer = document.getElementById('manifestItems');
-        const manifestTotalEl = document.getElementById('manifestTotal');
-        const cartCounterEl = document.getElementById('cartCounter');
-
-        let manifest = [];
-        const PRICE_PER_KG = 36;
-
-        window.toggleCard = function(card, event) {
-            if (window.innerWidth <= 600) {
-                if (event.target.closest('#addToManifestBtn') || 
-                    event.target.closest('select') || 
-                    event.target.closest('.close-expanded')) {
-                    return;
-                }
-                
-                document.querySelectorAll('.product-card.expanded').forEach(c => {
-                    if(c !== card) c.classList.remove('expanded');
-                });
-                
-                card.classList.add('expanded');
-                
-                setTimeout(() => {
-                    const yOffset = -20; 
-                    const y = card.getBoundingClientRect().top + window.scrollY + yOffset;
-                    window.scrollTo({top: y, behavior: 'smooth'});
-                }, 100);
-            }
-        };
-
-        window.closeCard = function(btn, event) {
-            event.stopPropagation();
-            const card = btn.closest('.product-card');
-            card.classList.remove('expanded');
-        };
-
-        const closeAllOverlays = () => {
-            sharedOverlay.classList.remove('active');
-            loginModal.classList.remove('active');
-            manifestSidebar.classList.remove('active');
-            document.body.style.overflow = 'auto'; 
-        };
-        sharedOverlay.addEventListener('click', closeAllOverlays);
-
-        loginBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            sharedOverlay.classList.add('active');
-            loginModal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        });
-
-        closeLoginBtn.addEventListener('click', () => {
-            closeAllOverlays();
-            setTimeout(() => {
-                loginForm.reset();
-                statusText.textContent = '';
-                statusText.className = 'mono-font status-text';
-                loginForm.querySelector('button').innerHTML = 'AUTHENTICATE';
-            }, 300);
-        });
-
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const btn = loginForm.querySelector('button');
-            btn.innerHTML = 'VERIFYING...';
-            statusText.textContent = '[SYSTEM] CHECKING CREDENTIALS...';
-            statusText.className = 'mono-font status-text';
-            loginForm.classList.remove('shake-active');
-            
-            setTimeout(() => {
-                btn.innerHTML = 'AUTHENTICATE';
-                statusText.textContent = '[ERROR] INVALID SUPPLIER_ID OR PASSKEY';
-                statusText.className = 'mono-font status-text status-error';
-                loginForm.classList.add('shake-active');
-            }, 1200);
-        });
-
-        function renderManifest() {
-            manifestItemsContainer.innerHTML = '';
-            let totalCost = 0;
-            let totalItemsCount = 0;
-
-            if (manifest.length === 0) {
-                manifestItemsContainer.innerHTML = `
-                    <p class="mono-font" style="color: #666; text-align: center; margin-top: 50px;">
-                        > [SYSTEM]<br>MANIFEST IS CURRENTLY EMPTY.
-                    </p>
-                `;
-                manifestTotalEl.innerText = '₱0';
-                cartCounterEl.innerText = '(0)';
-                return;
-            }
-
-            manifest.forEach((item, index) => {
-                const itemCost = item.weight * PRICE_PER_KG;
-                totalCost += itemCost;
-                totalItemsCount += 1;
-
-                const itemHTML = `
-                    <div class="manifest-item">
-                        <div class="manifest-item-title brand-font">> CRATE_01 // ${item.type}</div>
-                        <div class="manifest-item-details mono-font">
-                            <span>@ ₱${PRICE_PER_KG}/KG</span>
-                            <span style="color: var(--white); font-weight: bold; font-size: 16px;">₱${itemCost}</span>
-                        </div>
-                        <div class="manifest-item-controls mono-font">
-                            <div class="qty-control">
-                                <button class="qty-btn" onclick="updateQty(${index}, -1)">-</button>
-                                <span class="qty-val">${item.weight} KG</span>
-                                <button class="qty-btn" onclick="updateQty(${index}, 1)">+</button>
-                            </div>
-                            <button class="remove-btn" onclick="removeItem(${index})">REMOVE [X]</button>
-                        </div>
-                    </div>
-                `;
-                manifestItemsContainer.insertAdjacentHTML('beforeend', itemHTML);
-            });
-
-            manifestTotalEl.innerText = `₱${totalCost}`;
-            cartCounterEl.innerText = `(${totalItemsCount})`;
-        }
-
-        window.updateQty = function(index, changeAmount) {
-            if (manifest[index].weight + changeAmount > 0) {
-                manifest[index].weight += changeAmount;
-            } else {
-                manifest.splice(index, 1);
-            }
-            renderManifest();
-        };
-
-        window.removeItem = function(index) {
-            manifest.splice(index, 1);
-            renderManifest();
-        };
-
-        openManifestBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            sharedOverlay.classList.add('active');
-            manifestSidebar.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        });
-
-        closeManifestBtn.addEventListener('click', closeAllOverlays);
-
-        addToManifestBtn.addEventListener('click', (e) => {
-            const btn = e.currentTarget;
-            const originalHTML = btn.innerHTML;
-            
-            btn.innerHTML = 'ADDED! [✓]';
-            btn.style.background = 'var(--white)';
-            btn.style.color = 'var(--black)';
-            
-            setTimeout(() => {
-                btn.innerHTML = originalHTML;
-                btn.style.background = 'var(--black)';
-                btn.style.color = 'var(--yellow)';
-            }, 1000);
-
-            const type = productType.value;
-            const weight = parseInt(productWeight.value);
-
-            const existingItem = manifest.find(item => item.type === type);
-            if (existingItem) {
-                existingItem.weight += weight;
-            } else {
-                manifest.push({ type: type, weight: weight });
-            }
-
-            renderManifest();
-
-            setTimeout(() => {
-                if(!manifestSidebar.classList.contains('active')) {
-                    openManifestBtn.click();
-                }
-            }, 500);
-        });
-
-        renderManifest();
-
-    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="index.js"></script>
 </body>
 </html>
