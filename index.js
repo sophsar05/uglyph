@@ -147,45 +147,52 @@ window.toggleMobileDetails = function(cardElement) {
     }
 };
 
+// --- UPDATED RENDER FUNCTION WITH NEW UI DESIGN ---
 function renderProductCards() {
     if (!productGrid) return;
     productGrid.innerHTML = availableInventory.map(product => {
         const discount = Math.round(((product.market_price - product.rescue_price) / product.market_price) * 100);
         return `
-            <div class="product-card" onclick="toggleMobileDetails(this)" style="cursor:pointer;">
-                <div class="card-img-wrap">
-                    <span class="badge-right">-${discount}%</span>
-                    <div class="product-placeholder brand-font" style="display:flex; align-items:center; justify-content:center; height:180px; background:#111; color:var(--yellow); font-size:40px;">
+            <div class="product-card" onclick="toggleMobileDetails(this)" style="cursor:pointer; border: 2px solid #000; margin-bottom: 20px; background: #fff; box-shadow: 4px 4px 0px #000;">
+                <div class="card-img-wrap" style="position: relative; border-bottom: 2px solid #000;">
+                    <span class="badge-right" style="position: absolute; top: 10px; right: 10px; background: #d32f2f; color: white; padding: 5px 10px; font-weight: bold; border: 2px solid #000; box-shadow: 2px 2px 0px #000; z-index: 2;">-${discount}%</span>
+                    
+                    <div class="product-placeholder brand-font" style="display:flex; align-items:center; justify-content:center; height:180px; background:#111; color:var(--yellow, #f1c40f); font-size:40px;">
                         ${product.brand_name.split(' ')[0]}
                     </div>
-                    <span class="price-tag">₱${product.rescue_price} / KG</span>
+                    
+                    <span class="price-tag" style="position: absolute; bottom: 10px; right: 10px; background: var(--yellow, #f1c40f); color: #000; padding: 5px 10px; font-weight: bold; border: 2px solid #000; box-shadow: 2px 2px 0px #000;">₱${product.rescue_price} / KG</span>
                 </div>
-                <div class="card-body">
-                    <h3 class="product-name brand-font">${product.brand_name}</h3>
+                
+                <div class="card-body" style="padding: 15px;">
+                    <h3 class="product-name brand-font" style="margin: 0; font-size: 1.5rem; text-transform: uppercase;">${product.brand_name}</h3>
                     
                     <div class="expandable-details" style="display: none; margin-top: 15px;">
-                        <div class="pricing-grid">
-                            <div class="price-box">
-                                <span class="p-label">REGULAR PRICE</span>
-                                <span class="p-value" style="text-decoration: line-through; opacity: 0.5;">₱${product.market_price}</span>
+                        
+                        <div class="pricing-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                            <div class="price-box" style="border: 2px solid #ddd; padding: 10px; display: flex; flex-direction: column; justify-content: center; background: #f9f9f9;">
+                                <span class="p-label" style="font-size: 0.7rem; font-weight: 800; color: #555; margin-bottom: 5px;">REGULAR PRICE</span>
+                                <span class="p-value" style="font-size: 1.6rem; font-weight: 900; color: #ccc; text-decoration: line-through; line-height: 1;">₱${product.market_price}</span>
                             </div>
-                            <div class="price-box highlight">
-                                <span class="p-label">SURPLUS PRICE</span>
-                                <span class="p-value">₱${product.rescue_price}</span>
+                            <div class="price-box" style="border: 2px solid #000; padding: 10px; display: flex; flex-direction: column; justify-content: center; background: var(--yellow, #f1c40f); box-shadow: 3px 3px 0px #e0e0e0;">
+                                <span class="p-label" style="font-size: 0.7rem; font-weight: 800; color: #000; margin-bottom: 5px;">SURPLUS PRICE</span>
+                                <span class="p-value" style="font-size: 2rem; font-weight: 900; color: #000; line-height: 1;">₱${product.rescue_price}</span>
                             </div>
                         </div>
-                        <div class="select-grid" style="margin-top: 15px;">
-                            <select class="variant-select mono-font" onclick="event.stopPropagation()">
+
+                        <div class="select-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-top: 15px;">
+                            <select class="variant-select mono-font" onclick="event.stopPropagation()" style="width: 100%; padding: 12px; border: 2px solid #000; background: #e0e0e0; font-weight: bold; text-transform: uppercase; cursor: pointer; box-shadow: 2px 2px 0px #000; outline: none;">
                                 ${product.variants.map(v => `<option value="${v.id}">${v.type_name}</option>`).join('')}
                             </select>
-                            <select class="weight-select mono-font" onclick="event.stopPropagation()">
+                            <select class="weight-select mono-font" onclick="event.stopPropagation()" style="width: 100%; padding: 12px; border: 2px solid #000; background: #e0e0e0; font-weight: bold; text-transform: uppercase; cursor: pointer; box-shadow: 2px 2px 0px #000; outline: none;">
                                 <option value="1">1 KG</option>
                                 <option value="5">5 KG</option>
                                 <option value="10">10 KG</option>
                                 <option value="25">25 KG</option>
                             </select>
                         </div>
-                        <button class="btn-dark btn-full" style="margin-top: 15px;" onclick="event.stopPropagation(); addToManifest('${product.id}', this)">
+
+                        <button class="btn-dark btn-full" style="margin-top: 20px; width: 100%; padding: 15px; background: #111; color: var(--yellow, #f1c40f); border: none; font-weight: 900; font-size: 1.1rem; cursor: pointer;" onclick="event.stopPropagation(); addToManifest('${product.id}', this)">
                             ADD TO MANIFEST ->
                         </button>
                     </div>
