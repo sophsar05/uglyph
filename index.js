@@ -318,28 +318,106 @@ async function finalizeManifest(paymentMethod) {
 
     try {
         const { data: { user } } = await _supabase.auth.getUser();
-        
-        const { error: updateError } = await _supabase
+
+        const { data: manifestRecord, error: updateError } = await _supabase
             .from('manifests')
-            .update({ 
-                status: 'PENDING', 
-                payment_method: paymentMethod 
+            .update({
+                status: 'PENDING',
+                payment_method: paymentMethod
             })
             .eq('supplier_id', user.id)
-            .eq('status', 'DRAFT');
+            .eq('status', 'DRAFT')
+            .select()
+            .single();
 
         if (updateError) throw updateError;
 
-        alert(`MANIFEST SEALED VIA ${paymentMethod.replace(/_/g, ' ')}. AWAITING VERIFICATION.`);
-        manifest = []; 
-        renderManifest(); 
+        manifest = [];
+        renderManifest();
         closeAllOverlays();
+
+        // For non-COD payments, prompt receipt upload
+        if (paymentMethod !== 'CASH_ON_DELIVERY' && manifestRecord) {
+            showReceiptUploadPrompt(manifestRecord.id, user.id, paymentMethod);
+        } else {
+            showToast('MANIFEST SEALED. AWAITING VERIFICATION.');
+        }
     } catch (err) {
         alert("Transaction failed: " + err.message);
     } finally {
         sealManifestBtn.innerText = "SEAL MANIFEST";
         sealManifestBtn.disabled = false;
     }
+}
+
+// --- Receipt Upload (post-payment) ---
+
+function showReceiptUploadPrompt(manifestId, userId, paymentMethod) {
+    const existing = document.getElementById('receiptUploadModal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'receiptUploadModal';
+    modal.style.cssText = "position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:1002; background:#111; border:3px solid var(--yellow,#FFD600); padding:30px; width:90%; max-width:420px; color:#fff;";
+    modal.innerHTML = `
+        <h2 class="brand-font" style="color:var(--yellow,#FFD600); font-size:24px; margin-bottom:8px;">UPLOAD RECEIPT</h2>
+        <p class="mono-font" style="font-size:13px; color:#aaa; margin-bottom:20px;">
+            Upload your ${paymentMethod.replace(/_/g,' ')} payment screenshot so admin can verify your order.
+        </p>
+        <input type="file" id="receiptFileInput" accept="image/*" style="width:100%; padding:12px; background:#222; border:2px solid #444; color:#fff; margin-bottom:15px; font-family:'JetBrains Mono',monospace;">
+        <div style="display:flex; gap:10px;">
+            <button id="submitReceiptBtn" class="btn-dark" style="flex:1; padding:14px; font-size:15px; background:var(--yellow,#FFD600); color:#111; border:none; font-family:'Anton',sans-serif; text-transform:uppercase; cursor:pointer;">
+                SUBMIT RECEIPT
+            </button>
+            <button id="skipReceiptBtn" class="mono-font" style="padding:14px; border:1px solid #444; background:none; color:#888; cursor:pointer; font-size:12px;">
+                SKIP
+            </button>
+        </div>
+        <div id="receiptUploadStatus" class="mono-font" style="margin-top:15px; font-size:12px; color:#aaa; text-align:center;"></div>
+    `;
+    document.body.appendChild(modal);
+    sharedOverlay.classList.add('active');
+
+    document.getElementById('skipReceiptBtn').onclick = () => {
+        modal.remove();
+        closeAllOverlays();
+        showToast('MANIFEST SEALED. UPLOAD YOUR RECEIPT LATER TO SPEED UP VERIFICATION.');
+    };
+
+    document.getElementById('submitReceiptBtn').onclick = async () => {
+        const file = document.getElementById('receiptFileInput').files[0];
+        if (!file) { document.getElementById('receiptUploadStatus').textContent = 'Please select a file.'; return; }
+
+        const statusEl = document.getElementById('receiptUploadStatus');
+        const submitBtn = document.getElementById('submitReceiptBtn');
+        submitBtn.textContent = 'UPLOADING...';
+        submitBtn.disabled = true;
+        statusEl.textContent = 'Uploading...';
+
+        try {
+            const filePath = `${userId}/${manifestId}/${Date.now()}_${file.name}`;
+            const { error: uploadError } = await _supabase.storage
+                .from('receipts')
+                .upload(filePath, file, { upsert: true });
+
+            if (uploadError) throw uploadError;
+
+            const { data: urlData } = _supabase.storage.from('receipts').getPublicUrl(filePath);
+
+            await _supabase.from('manifests')
+                .update({ receipt_url: urlData.publicUrl })
+                .eq('id', manifestId);
+
+            statusEl.textContent = '✓ RECEIPT UPLOADED SUCCESSFULLY';
+            statusEl.style.color = '#22c55e';
+            setTimeout(() => { modal.remove(); closeAllOverlays(); showToast('RECEIPT SUBMITTED. AWAITING ADMIN VERIFICATION.'); }, 1500);
+        } catch (err) {
+            statusEl.textContent = `Upload failed: ${err.message}`;
+            statusEl.style.color = '#D32F2F';
+            submitBtn.textContent = 'RETRY';
+            submitBtn.disabled = false;
+        }
+    };
 }
 
 // --- 4. AUTHENTICATION (REWRITTEN FOR SIGNUP WITH SUPPLIERS TABLE) ---
