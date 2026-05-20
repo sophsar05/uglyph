@@ -11,44 +11,22 @@ const manifestTotalEl = document.getElementById('manifestTotal');
 const cartCounterEl = document.getElementById('cartCounter');
 
 const sharedOverlay = document.getElementById('sharedOverlay');
-const loginBtn = document.getElementById('openLoginBtn');
-const closeLoginBtn = document.getElementById('closeLoginBtn');
-const loginModal = document.getElementById('loginModal');
-const loginForm = document.getElementById('loginForm');
-const statusText = document.getElementById('loginStatus');
-
-// Auth Toggle Elements
-const authTitle = document.getElementById('authTitle');
-const authSubmitBtn = document.getElementById('authSubmitBtn');
-const authToggle = document.getElementById('authToggle');
-const signupFields = document.getElementById('signupFields'); // Added for Supplier details
-
 const openManifestBtn = document.getElementById('openManifestBtn');
 const closeManifestBtn = document.getElementById('closeManifestBtn');
 const manifestSidebar = document.getElementById('manifestSidebar');
 const sealManifestBtn = document.getElementById('sealManifestBtn');
 
-// --- NEW: DYNAMIC PAYMENT MODAL ---
-let paymentModal = document.getElementById('paymentModal');
-if (!paymentModal) {
-    paymentModal = document.createElement('div');
-    paymentModal.id = 'paymentModal';
-    // Applied generic modal styling inline to ensure it displays correctly without relying on external CSS classes
-    paymentModal.style.cssText = "display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:1001; background:#000; border:2px solid var(--yellow, #f1c40f); padding:30px; width:90%; max-width:400px; text-align:center;";
-    paymentModal.innerHTML = `
-        <h2 class="brand-font" style="color:var(--yellow, #f1c40f); margin-bottom:20px;">SELECT PAYMENT METHOD</h2>
-        <div class="payment-options" style="display:flex; flex-direction:column; gap:15px;">
-            <button class="btn-dark payment-choice" style="padding:15px; border:1px solid #444; background:#111; color:white; cursor:pointer;" data-method="GCASH">GCASH</button>
-            <button class="btn-dark payment-choice" style="padding:15px; border:1px solid #444; background:#111; color:white; cursor:pointer;" data-method="CASH_ON_DELIVERY">CASH ON DELIVERY (COD)</button>
-            <button class="btn-dark payment-choice" style="padding:15px; border:1px solid #444; background:#111; color:white; cursor:pointer;" data-method="BANK_TRANSFER">BANK TRANSFER</button>
-            <button class="btn-dark payment-choice" style="padding:15px; border:1px solid #444; background:#111; color:white; cursor:pointer;" data-method="CARD">CREDIT/DEBIT CARD</button>
-        </div>
-        <button id="cancelPayment" class="mono-font" style="background:none; border:none; color:gray; margin-top:20px; cursor:pointer;">[ CANCEL ]</button>
-    `;
-    document.body.appendChild(paymentModal);
-}
+// Checkout Modal Elements
+const checkoutModal = document.getElementById('checkoutModal');
+const checkoutForm = document.getElementById('checkoutForm');
+const closeCheckoutBtn = document.getElementById('closeCheckoutBtn');
+const checkoutName = document.getElementById('checkoutName');
+const checkoutContact = document.getElementById('checkoutContact');
+const checkoutAddress = document.getElementById('checkoutAddress');
+const checkoutPayment = document.getElementById('checkoutPayment');
+const checkoutStatus = document.getElementById('checkoutStatus');
 
-// --- NEW: DYNAMIC TOAST & PRODUCT DETAILS UI ---
+// --- DYNAMIC TOAST & PRODUCT DETAILS UI ---
 const toastContainer = document.createElement('div');
 toastContainer.style.cssText = "position:fixed; bottom:30px; left:50%; transform:translateX(-50%); z-index:9999; display:flex; flex-direction:column; gap:10px; pointer-events:none;";
 document.body.appendChild(toastContainer);
@@ -90,7 +68,7 @@ window.openProductDetails = function(productId) {
             ${product.description || 'No description available for this surplus batch.'}
         </p>
         <div style="display:flex; justify-content:space-between; margin-bottom:20px;" class="mono-font">
-            <div><span style="opacity:0.5; font-size:12px;">MARKET</span><br><s style="color:red;">₱${product.market_price}</s></div>
+            <div><span style="opacity:0.5; font-size:12px;">MARKET</span><br><span style="color:red; font-weight:bold;">₱${product.market_price}</span></div>
             <div><span style="opacity:0.5; font-size:12px;">SURPLUS</span><br><b style="color:var(--yellow, #f1c40f); font-size:18px;">₱${product.rescue_price}</b></div>
         </div>
         <button onclick="closeAllOverlays()" class="btn-dark btn-full mono-font" style="padding:10px; width:100%; border:1px solid #444; background:#222; color:white; cursor:pointer;">[ CLOSE ]</button>
@@ -103,7 +81,6 @@ window.openProductDetails = function(productId) {
 // --- STATE ---
 let manifest = [];
 let availableInventory = [];
-let isLoginMode = true; // Tracks if we are in Login or Signup mode
 
 // --- 1. INVENTORY: FETCH & DYNAMIC RENDERING ---
 
@@ -136,8 +113,6 @@ async function fetchInventory() {
     renderProductCards();
 }
 
-
-// NEW: Toggle function for mobile
 window.toggleMobileDetails = function(cardElement) {
     const details = cardElement.querySelector('.expandable-details');
     if (details.style.display === 'none' || details.style.display === '') {
@@ -147,7 +122,6 @@ window.toggleMobileDetails = function(cardElement) {
     }
 };
 
-// --- UPDATED RENDER FUNCTION WITH NEW UI DESIGN ---
 function renderProductCards() {
     if (!productGrid) return;
     productGrid.innerHTML = availableInventory.map(product => {
@@ -156,27 +130,24 @@ function renderProductCards() {
             <div class="product-card" onclick="toggleMobileDetails(this)" style="cursor:pointer; border: 2px solid #000; margin-bottom: 20px; background: #fff; box-shadow: 4px 4px 0px #000;">
                 <div class="card-img-wrap" style="position: relative; border-bottom: 2px solid #000;">
                     <span class="badge-right" style="position: absolute; top: 10px; right: 10px; background: #d32f2f; color: white; padding: 5px 10px; font-weight: bold; border: 2px solid #000; box-shadow: 2px 2px 0px #000; z-index: 2;">-${discount}%</span>
-                    
                     <div class="product-placeholder brand-font" style="display:flex; align-items:center; justify-content:center; height:180px; background:#111; color:var(--yellow, #f1c40f); font-size:40px;">
                         ${product.brand_name.split(' ')[0]}
                     </div>
-                    
-                    <span class="price-tag" style="position: absolute; bottom: 10px; right: 10px; background: var(--yellow, #f1c40f); color: #000; padding: 5px 10px; font-weight: bold; border: 2px solid #000; box-shadow: 2px 2px 0px #000;">₱${product.rescue_price} / KG</span>
+                    <span class="price-tag" style="position: absolute; bottom: 10px; right: 10px; background: var(--yellow, #f1c40f); color: #000; padding: 5px 10px; font-weight: bold; border: 2px solid #000; box-shadow: 2px 2px 0px #000;"><span style="font-family: sans-serif;">₱</span>${product.rescue_price} / KG</span>
                 </div>
                 
                 <div class="card-body" style="padding: 15px;">
                     <h3 class="product-name brand-font" style="margin: 0; font-size: 1.5rem; text-transform: uppercase;">${product.brand_name}</h3>
                     
                     <div class="expandable-details" style="display: none; margin-top: 15px;">
-                        
                         <div class="pricing-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
                             <div class="price-box" style="border: 2px solid #ddd; padding: 10px; display: flex; flex-direction: column; justify-content: center; background: #f9f9f9;">
                                 <span class="p-label" style="font-size: 0.7rem; font-weight: 800; color: #555; margin-bottom: 5px;">REGULAR PRICE</span>
-                                <span class="p-value" style="font-size: 1.6rem; font-weight: 900; color: #ccc; text-decoration: line-through; line-height: 1;">₱${product.market_price}</span>
+                                <span class="p-value" style="font-size: 1.6rem; font-weight: 900; color: #ccc; line-height: 1;"><span style="font-family: sans-serif;">₱</span>${product.market_price}</span>
                             </div>
-                            <div class="price-box" style="border: 2px solid #000; padding: 10px; display: flex; flex-direction: column; justify-content: center; background: var(--yellow, #f1c40f); box-shadow: 3px 3px 0px #e0e0e0;">
+                            <div class="price-box highlight" style="border: 2px solid #000; padding: 10px; display: flex; flex-direction: column; justify-content: center; background: var(--yellow, #f1c40f); box-shadow: 3px 3px 0px #e0e0e0;">
                                 <span class="p-label" style="font-size: 0.7rem; font-weight: 800; color: #000; margin-bottom: 5px;">SURPLUS PRICE</span>
-                                <span class="p-value" style="font-size: 2rem; font-weight: 900; color: #000; line-height: 1;">₱${product.rescue_price}</span>
+                                <span class="p-value" style="font-size: 2rem; font-weight: 900; color: #000; line-height: 1;"><span>₱</span>${product.rescue_price}</span>
                             </div>
                         </div>
 
@@ -223,10 +194,12 @@ window.addToManifest = function(productId, button) {
     }
 
     renderManifest();
-    syncManifestToDB();
-    
-    // Trigger the floating bubble notification
+    saveManifestToLocalStorage();
     showToast(`+${weight}KG ${product.brand_name.split(' ')[0]} ADDED`);
+
+    // Auto-open manifest sidebar after adding an item
+    sharedOverlay.classList.add('active');
+    manifestSidebar.classList.add('active');
 };
 
 function renderManifest() {
@@ -257,31 +230,74 @@ window.updateQty = function(index, change) {
     if (manifest[index].weight + change > 0) manifest[index].weight += change;
     else manifest.splice(index, 1);
     renderManifest();
-    syncManifestToDB();
+    saveManifestToLocalStorage();
 };
 
 window.removeItem = function(index) {
     manifest.splice(index, 1);
     renderManifest();
-    syncManifestToDB();
+    saveManifestToLocalStorage();
 };
 
-// --- 3. DATABASE SYNC & SEALING ---
+// --- Local Storage Management for Local Guest Cart Drafts ---
+function saveManifestToLocalStorage() {
+    localStorage.setItem('uglyph_guest_manifest', JSON.stringify(manifest));
+}
 
-async function syncManifestToDB() {
-    const { data: { user } } = await _supabase.auth.getUser();
-    if (!user) return;
+function loadManifestFromLocalStorage() {
+    const saved = localStorage.getItem('uglyph_guest_manifest');
+    if (saved) {
+        try {
+            manifest = JSON.parse(saved);
+            renderManifest();
+        } catch (e) {
+            console.error("Error reading manifest cache:", e);
+        }
+    }
+}
 
-    const totalAmount = manifest.reduce((sum, item) => sum + (item.weight * item.price), 0);
-    const { data: manifestRecord, error: mError } = await _supabase
-        .from('manifests')
-        .upsert({ supplier_id: user.id, total_amount: totalAmount, status: 'DRAFT' }, { onConflict: 'supplier_id' })
-        .select().single();
+// --- 3. CHECKOUT & SUBMISSION HANDLING ---
 
-    if (mError) return console.error("Sync Error:", mError);
+// Open Checkout Modal
+sealManifestBtn.addEventListener('click', () => {
+    if (manifest.length === 0) return alert("Manifest is empty.");
+    manifestSidebar.classList.remove('active');
+    checkoutModal.classList.add('active');
+    sharedOverlay.classList.add('active');
+});
 
-    await _supabase.from('manifest_items').delete().eq('manifest_id', manifestRecord.id);
-    if (manifest.length > 0) {
+// Handle Checkout Submission
+checkoutForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const name = checkoutName.value;
+    const contact = checkoutContact.value;
+    const address = checkoutAddress.value;
+    const paymentMethod = checkoutPayment.value;
+
+    checkoutStatus.textContent = '[SYSTEM] INITIALIZING SUBMISSION PROTOCOL...';
+    
+    const confirmBtn = document.getElementById('confirmCheckoutBtn');
+    confirmBtn.innerText = "PROCESSING MANIFEST...";
+    confirmBtn.disabled = true;
+
+    try {
+        const totalAmount = manifest.reduce((sum, item) => sum + (item.weight * item.price), 0);
+
+        const { data: manifestRecord, error: mError } = await _supabase
+            .from('manifests')
+            .insert([{
+                customer_name: name,
+                delivery_address: `${address} (Contact: ${contact})`,
+                payment_method: paymentMethod,
+                total_amount: totalAmount,
+                status: 'PENDING'
+            }])
+            .select()
+            .single();
+
+        if (mError) throw mError;
+
         const lineItems = manifest.map(item => ({
             manifest_id: manifestRecord.id,
             product_variant_id: item.variantId,
@@ -289,70 +305,78 @@ async function syncManifestToDB() {
             price_at_time: item.price,
             line_total: item.weight * item.price
         }));
-        await _supabase.from('manifest_items').insert(lineItems);
-    }
-}
 
-// Open Payment Modal when Sealing
-sealManifestBtn.addEventListener('click', async () => {
-    if (manifest.length === 0) return alert("Manifest is empty.");
-    const { data: { user } } = await _supabase.auth.getUser();
-    if (!user) return loginBtn.click();
-    
-    // Open Payment Modal
-    paymentModal.style.display = 'block';
-    sharedOverlay.classList.add('active');
-});
+        const { error: itemsError } = await _supabase
+            .from('manifest_items')
+            .insert(lineItems);
 
-// Handle Payment Method Selection
-document.querySelectorAll('.payment-choice').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-        const paymentMethod = e.target.getAttribute('data-method');
-        await finalizeManifest(paymentMethod);
-    });
-});
-
-async function finalizeManifest(paymentMethod) {
-    sealManifestBtn.innerText = "PROCESSING...";
-    sealManifestBtn.disabled = true;
-
-    try {
-        const { data: { user } } = await _supabase.auth.getUser();
-
-        const { data: manifestRecord, error: updateError } = await _supabase
-            .from('manifests')
-            .update({
-                status: 'PENDING',
-                payment_method: paymentMethod
-            })
-            .eq('supplier_id', user.id)
-            .eq('status', 'DRAFT')
-            .select()
-            .single();
-
-        if (updateError) throw updateError;
+        if (itemsError) throw itemsError;
 
         manifest = [];
         renderManifest();
+        saveManifestToLocalStorage();
         closeAllOverlays();
+        checkoutForm.reset();
 
-        // For non-COD payments, prompt receipt upload
         if (paymentMethod !== 'CASH_ON_DELIVERY' && manifestRecord) {
-            showReceiptUploadPrompt(manifestRecord.id, user.id, paymentMethod);
+            showReceiptUploadPrompt(manifestRecord.id, paymentMethod);
         } else {
-            showToast('MANIFEST SEALED. AWAITING VERIFICATION.');
+            showToast('MANIFEST SEALED. AWAITING DISPATCH VERIFICATION.');
         }
+
     } catch (err) {
-        alert("Transaction failed: " + err.message);
-    } finally {
-        sealManifestBtn.innerText = "SEAL MANIFEST";
-        sealManifestBtn.disabled = false;
+        console.error(err);
+        checkoutStatus.textContent = `[ERROR] ${err.message.toUpperCase()}`;
+        confirmBtn.disabled = false;
+        confirmBtn.innerText = "CONFIRM & SEAL MANIFEST";
     }
+});
+
+// --- Image Compression Utility ---
+// Compresses an image file before upload, keeping max width/height within limits
+function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.7) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = event => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+
+                // Scale down maintaining aspect ratio
+                if (width > maxWidth || height > maxHeight) {
+                    if (width > height) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    } else {
+                        width = Math.round((width * maxHeight) / height);
+                        height = maxHeight;
+                    }
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Export to compressed JPEG blob
+                canvas.toBlob((blob) => {
+                    resolve(blob);
+                }, 'image/jpeg', quality);
+            };
+            img.onerror = err => reject(err);
+        };
+        reader.onerror = err => reject(err);
+    });
 }
 
-// --- Receipt Upload (post-payment) ---
 
-function showReceiptUploadPrompt(manifestId, userId, paymentMethod) {
+// --- Receipt Upload Workflow ---
+
+function showReceiptUploadPrompt(manifestId, paymentMethod) {
     const existing = document.getElementById('receiptUploadModal');
     if (existing) existing.remove();
 
@@ -381,7 +405,7 @@ function showReceiptUploadPrompt(manifestId, userId, paymentMethod) {
     document.getElementById('skipReceiptBtn').onclick = () => {
         modal.remove();
         closeAllOverlays();
-        showToast('MANIFEST SEALED. UPLOAD YOUR RECEIPT LATER TO SPEED UP VERIFICATION.');
+        showToast('MANIFEST SEALED. UPLOAD RECEIPT LATER TO FINALIZE VERIFICATION.');
     };
 
     document.getElementById('submitReceiptBtn').onclick = async () => {
@@ -390,15 +414,27 @@ function showReceiptUploadPrompt(manifestId, userId, paymentMethod) {
 
         const statusEl = document.getElementById('receiptUploadStatus');
         const submitBtn = document.getElementById('submitReceiptBtn');
-        submitBtn.textContent = 'UPLOADING...';
+        submitBtn.textContent = 'COMPRESSING...';
         submitBtn.disabled = true;
-        statusEl.textContent = 'Uploading...';
+        statusEl.textContent = 'Optimizing image...';
 
         try {
-            const filePath = `${userId}/${manifestId}/${Date.now()}_${file.name}`;
+            // Compress the image before uploading (Max 800x800, 70% Quality JPEG)
+            const compressedBlob = await compressImage(file, 800, 800, 0.7);
+
+            statusEl.textContent = 'Uploading to manifest...';
+            submitBtn.textContent = 'UPLOADING...';
+
+            // Ensure filename reflects the compression and format change
+            const originalName = file.name.split('.').slice(0, -1).join('.');
+            const filePath = `guest_manifests/${manifestId}/${Date.now()}_${originalName}_compressed.jpg`;
+            
             const { error: uploadError } = await _supabase.storage
                 .from('receipts')
-                .upload(filePath, file, { upsert: true });
+                .upload(filePath, compressedBlob, { 
+                    upsert: true,
+                    contentType: 'image/jpeg' 
+                });
 
             if (uploadError) throw uploadError;
 
@@ -410,7 +446,7 @@ function showReceiptUploadPrompt(manifestId, userId, paymentMethod) {
 
             statusEl.textContent = '✓ RECEIPT UPLOADED SUCCESSFULLY';
             statusEl.style.color = '#22c55e';
-            setTimeout(() => { modal.remove(); closeAllOverlays(); showToast('RECEIPT SUBMITTED. AWAITING ADMIN VERIFICATION.'); }, 1500);
+            setTimeout(() => { modal.remove(); closeAllOverlays(); showToast('RECEIPT SUBMITTED. AWAITING VERIFICATION.'); }, 1500);
         } catch (err) {
             statusEl.textContent = `Upload failed: ${err.message}`;
             statusEl.style.color = '#D32F2F';
@@ -420,135 +456,33 @@ function showReceiptUploadPrompt(manifestId, userId, paymentMethod) {
     };
 }
 
-// --- 4. AUTHENTICATION (REWRITTEN FOR SIGNUP WITH SUPPLIERS TABLE) ---
-
-// Toggle between Login and Signup modes
-authToggle.addEventListener('click', () => {
-    isLoginMode = !isLoginMode;
-    if (isLoginMode) {
-        authTitle.innerText = "SUPPLIER LOGIN";
-        authSubmitBtn.innerText = "AUTHENTICATE";
-        authToggle.innerText = "DON'T HAVE AN ACCOUNT? SIGN UP";
-        if (signupFields) signupFields.style.display = 'none';
-    } else {
-        authTitle.innerText = "SUPPLIER REGISTRATION";
-        authSubmitBtn.innerText = "CREATE ACCOUNT";
-        authToggle.innerText = "ALREADY HAVE AN ACCOUNT? LOGIN";
-        if (signupFields) signupFields.style.display = 'block';
-    }
-
-    // Toggle required state on business fields so they don't block login
-    const bName = document.getElementById('businessName');
-    const cNum = document.getElementById('contactNumber');
-    if(bName) bName.required = !isLoginMode;
-    if(cNum) cNum.required = !isLoginMode;
-
-    statusText.textContent = ""; // Clear status on toggle
-});
-
-loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    // Fallback selectors to handle both older and newer HTML versions of the input
-    const email = document.getElementById('authEmail')?.value || loginForm.querySelector('input[type="email"], input[type="text"]').value;
-    const password = document.getElementById('authPassword')?.value || loginForm.querySelector('input[type="password"]').value;
-
-    statusText.textContent = isLoginMode ? '[SYSTEM] AUTHENTICATING...' : '[SYSTEM] CREATING PROTOCOL...';
-
-    if (isLoginMode) {
-        // Handle Login
-        const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-        
-        if (error) {
-            statusText.textContent = `[ERROR] ${error.message.toUpperCase()}`;
-        } else {
-            statusText.textContent = '[SYSTEM] ACCESS GRANTED';
-            setTimeout(() => {
-                closeAllOverlays();
-                loadManifestFromDB();
-            }, 1000);
-        }
-
-    } else {
-        // Handle Signup
-        const { data: authData, error: authError } = await _supabase.auth.signUp({ email, password });
-
-        if (authError) {
-            statusText.textContent = `[ERROR] ${authError.message.toUpperCase()}`;
-            return;
-        }
-
-        // 2. Insert into Suppliers Table
-        const businessName = document.getElementById('businessName') ? document.getElementById('businessName').value : 'N/A';
-        const contactNumber = document.getElementById('contactNumber') ? document.getElementById('contactNumber').value : 'N/A';
-
-        // Check if user object returned successfully before DB insert
-        if (authData.user) {
-            const { error: dbError } = await _supabase
-                .from('suppliers')
-                .insert([{ 
-                    id: authData.user.id, // Primary key maps directly to auth.users.id
-                    supplier_id: email.split('@')[0], 
-                    business_name: businessName,
-                    contact_number: contactNumber,
-                    status: 'pending' // Account sits in pending until admin approval
-                }]);
-
-            if (dbError) {
-                statusText.textContent = `[DB ERROR] ${dbError.message.toUpperCase()}`;
-                return;
-            }
-        }
-
-        if (authData.user && authData.session === null) {
-            statusText.textContent = '[SUCCESS] REGISTRATION COMPLETE. CHECK EMAIL.';
-        } else {
-            statusText.textContent = '[SYSTEM] ACCOUNT CREATED & DATABASE SYNCED';
-            setTimeout(() => {
-                closeAllOverlays();
-                loadManifestFromDB();
-            }, 1000);
-        }
-    }
-});
-
-async function loadManifestFromDB() {
-    const { data: { user } } = await _supabase.auth.getUser();
-    if (!user) return;
-    const { data } = await _supabase
-        .from('manifests')
-        .select(`id, manifest_items (product_variant_id, quantity_kg, price_at_time, product_variants (type_name, products (brand_name)))`)
-        .eq('supplier_id', user.id).eq('status', 'DRAFT').maybeSingle();
-
-    if (data && data.manifest_items) {
-        manifest = data.manifest_items.map(item => ({
-            variantId: item.product_variant_id,
-            type: `${item.product_variants.products.brand_name} (${item.product_variants.type_name})`,
-            weight: item.quantity_kg,
-            price: item.price_at_time
-        }));
-        renderManifest();
-    }
-}
-
-// --- 5. UI CONTROLS ---
+// --- 4. UI CONTROLS ---
 
 const closeAllOverlays = () => {
     sharedOverlay.classList.remove('active');
-    loginModal.classList.remove('active');
     manifestSidebar.classList.remove('active');
-    if (paymentModal) paymentModal.style.display = 'none';
-    if (detailsModal) detailsModal.style.display = 'none'; // Added to close details modal
+    if (checkoutModal) checkoutModal.classList.remove('active');
+    if (detailsModal) detailsModal.style.display = 'none';
+    
+    const receiptModal = document.getElementById('receiptUploadModal');
+    if (receiptModal) receiptModal.remove();
+    
+    // Clear checkout error descriptions upon dialog closure
+    if (checkoutStatus) checkoutStatus.textContent = "";
+    const confirmBtn = document.getElementById('confirmCheckoutBtn');
+    if (confirmBtn) {
+        confirmBtn.disabled = false;
+        confirmBtn.innerText = "CONFIRM & SEAL MANIFEST";
+    }
+
     document.body.style.overflow = 'auto'; 
 };
 
 sharedOverlay.addEventListener('click', closeAllOverlays);
-document.getElementById('cancelPayment')?.addEventListener('click', closeAllOverlays);
-loginBtn.addEventListener('click', () => { sharedOverlay.classList.add('active'); loginModal.classList.add('active'); });
-closeLoginBtn.addEventListener('click', closeAllOverlays);
+closeCheckoutBtn.addEventListener('click', closeAllOverlays);
 openManifestBtn.addEventListener('click', () => { sharedOverlay.classList.add('active'); manifestSidebar.classList.add('active'); });
 closeManifestBtn.addEventListener('click', closeAllOverlays);
 
-// --- INITIALIZE ---
+// --- INITIALIZE BASE DATA ---
 fetchInventory();
-loadManifestFromDB();
+loadManifestFromLocalStorage();
