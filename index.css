@@ -36,6 +36,11 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
+/* Add this class via JS when a modal is open to lock the background */
+body.no-scroll {
+    overflow: hidden !important;
+}
+
 h1, h2, h3, .brand-font {
     font-family: 'Anton', sans-serif;
     text-transform: uppercase;
@@ -50,7 +55,7 @@ h1, h2, h3, .brand-font {
    2. GLOBAL UTILITIES & COMPONENTS
    ========================================================================== */
 .container {
-    max-width: 1440px; /* Expanded for better large screen anchoring */
+    max-width: 1440px; 
     margin: 0 auto;
     padding: 0 60px;
 }
@@ -141,7 +146,7 @@ header {
     padding: 100px 0;
     min-height: 85vh;
     display: grid;
-    grid-template-columns: 1.1fr 0.9fr; /* Professional 2-column split */
+    grid-template-columns: 1.1fr 0.9fr; 
     gap: 80px;
     align-items: center;
 }
@@ -160,7 +165,7 @@ header {
 }
 
 .hero-title { 
-    font-size: clamp(50px, 7vw, 100px); /* Clean scaling, won't break layout */
+    font-size: clamp(50px, 7vw, 100px); 
     line-height: 1.05; 
     margin-bottom: 30px; 
     color: var(--black);
@@ -173,7 +178,7 @@ header {
     transform-origin: center;
     margin: 0.2em 0.3em 0.3em 0;
     line-height: 1.1;
-    transform: rotate(-2deg); /* Natural brutalist angle */
+    transform: rotate(-2deg); 
 }
 
 .hero-desc { 
@@ -192,10 +197,9 @@ header {
 .stat-num { font-family: 'Anton', sans-serif; font-size: 40px; display: block; line-height: 1; margin-bottom: 5px; }
 .stat-label { font-size: 11px; font-weight: 900; letter-spacing: 0.5px; }
 
-/* The Desktop Anchored Art Box */
 .hero-right {
     display: flex;
-    justify-content: flex-end; /* Anchors the art box to the right */
+    justify-content: flex-end; 
     align-items: center;
     width: 100%;
 }
@@ -203,7 +207,7 @@ header {
 .hero-art {
     width: 100%;
     max-width: 500px;
-    aspect-ratio: 1 / 1; /* Creates a perfect square crate */
+    aspect-ratio: 1 / 1; 
     border: 8px solid var(--black); 
     box-shadow: 16px 16px 0px var(--black);
     background-color: var(--yellow);
@@ -265,13 +269,10 @@ header {
 .p-label { font-size: 11px; font-weight: 900; display: block; margin-bottom: 5px; color: #666; }
 .price-box.highlight .p-label { color: var(--black); }
 .p-value { font-size: 28px; font-family: 'Anton', sans-serif; }
-/* 1. Force strikethrough on the FIRST box (Regular Price) */
 .pricing-grid .price-box:first-child .p-value {
     color: #aaa !important;
     text-decoration: line-through !important;
 }
-
-/* 2. Force NO strikethrough on the SECOND box (Surplus Price) */
 .pricing-grid .price-box:last-child .p-value {
     color: var(--black) !important;
     text-decoration: none !important;
@@ -325,10 +326,28 @@ header {
 /* ==========================================================================
    6. MODALS & SIDEBARS
    ========================================================================== */
-.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(17, 17, 17, 0.85); backdrop-filter: blur(4px); z-index: 1000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(17, 17, 17, 0.85); backdrop-filter: blur(4px); z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
 .modal-overlay.active { opacity: 1; pointer-events: auto; }
-.modal-content { background: var(--white); border: var(--border-width) solid var(--black); padding: 40px; width: 90%; max-width: 450px; box-shadow: 16px 16px 0px var(--black); position: relative; transform: translateY(20px); transition: transform 0.3s ease; background-image: var(--grid-pattern); background-size: 20px 20px; }
-.modal-overlay.active .modal-content { transform: translateY(0); }
+
+/* FIXED MODAL CENTERING */
+.modal-content { 
+    background: var(--white); 
+    border: var(--border-width) solid var(--black); 
+    padding: 40px; 
+    width: 90%; 
+    max-width: 450px; 
+    box-shadow: 16px 16px 0px var(--black); 
+    background-image: var(--grid-pattern); 
+    background-size: 20px 20px; 
+    /* Force Absolute Centering */
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    max-height: 90vh; /* Prevents extending past the screen */
+    overflow-y: auto; /* Allows inside scrolling if height is cramped */
+}
+
 .close-btn { position: absolute; top: -15px; right: -15px; background: var(--red); color: var(--white); border: var(--border-width) solid var(--black); width: 45px; height: 45px; font-size: 22px; font-weight: 900; cursor: pointer; box-shadow: 4px 4px 0px var(--black); transition: all 0.2s; display: flex; align-items: center; justify-content: center; padding-bottom: 3px; z-index: 10; }
 .close-btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px var(--black); }
 .modal-header { margin-bottom: 30px; background: var(--white); padding: 15px; border: var(--border-width) solid var(--black); text-align: center; }
@@ -437,12 +456,11 @@ header {
         font-size: clamp(38px, 10vw, 48px); 
         line-height: 1.15; 
         margin-bottom: 20px; 
-        word-wrap: break-word; /* Prevents overflow */
+        word-wrap: break-word; 
     }
     .hero-title .highlight { padding: 4px 12px; margin-top: 5px; }
     .hero-desc { font-size: 15px; margin-bottom: 30px; }
     
-    /* Stats grid fixed to stop horizontal overflow entirely */
     .hero-stats { 
         display: grid; 
         grid-template-columns: repeat(3, 1fr); 
@@ -597,15 +615,15 @@ header {
     .mobile-protocol .p-title {
         font-family: 'JetBrains Mono', monospace;
         font-weight: 900; color: #888;
-        font-size: 14px; text-transform: uppercase; margin-bottom: 8px; line-height: 1.2;
-        transition: color 0.2s;
+        font-size: 14px; text-transform: uppercase; margin-bottom: 5px;
     }
-    .mobile-protocol .p-item.active .p-title { color: var(--yellow); }
-    
+    .mobile-protocol .p-item.active .p-title {
+        color: var(--white);
+    }
     .mobile-protocol .p-desc {
-        font-size: 13px; color: #666; font-weight: 500; line-height: 1.5;
-        font-family: 'Inter', sans-serif;
-        transition: color 0.2s;
+        font-size: 13px; color: #666; line-height: 1.4;
     }
-    .mobile-protocol .p-item.active .p-desc { color: #ddd; }
+    .mobile-protocol .p-item.active .p-desc {
+        color: #aaa;
+    }
 }

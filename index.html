@@ -44,7 +44,7 @@
                         SHOP THE SURPLUS
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
                     </button>
-                    
+                     
                     <div class="hero-stats">
                         <div class="stat-box">
                             <span class="stat-num">50%</span>
@@ -107,7 +107,7 @@
 
                 <div class="product-grid" id="productGrid">
                     <div class="mono-font" style="grid-column: 1/-1; text-align: center; padding: 50px;">
-                        > INITIALIZING SYSTEM... LOADING STOCK...
+                        &gt; INITIALIZING SYSTEM... LOADING STOCK...
                     </div>
                 </div>
             </div>
@@ -162,7 +162,7 @@
                     </div>
                     <span class="ph-status">4 STEPS</span>
                 </div>
-                
+                 
                 <div class="protocol-list">
                     <div class="p-item active">
                         <div class="p-check">
@@ -237,6 +237,44 @@
         </footer>
     </div>
 
+    <div class="modal-overlay" id="checkoutModal" style="display: none;"> 
+        <div class="modal-content">
+            <button class="close-btn" id="closeCheckoutBtn" onclick="closeAllOverlays()">✖</button>
+            <div class="modal-header">
+                <h2 class="brand-font">SEAL MANIFEST</h2>
+                <span class="sub-badge mono-font">STEP 3: PAYMENT & LOGISTICS</span>
+            </div>
+            <form id="checkoutForm">
+                <div class="input-group">
+                    <label class="mono-font">&gt; RECEIVER_NAME</label>
+                    <input type="text" id="checkoutName" class="mono-font" required placeholder="ENTER NAME...">
+                </div>
+                <div class="input-group">
+                    <label class="mono-font">&gt; CONTACT_NUMBER</label>
+                    <input type="text" id="checkoutContact" class="mono-font" required placeholder="09XX XXX XXXX">
+                </div>
+                <div class="input-group">
+                    <label class="mono-font">&gt; DELIVERY_ADDRESS</label>
+                    <input type="text" id="checkoutAddress" class="mono-font" required placeholder="ENTER COMPLETE DELIVERY ADDRESS...">
+                </div>
+                <div class="input-group">
+                    <label class="mono-font">&gt; GCASH_REFERENCE_NO</label>
+                    <input type="text" id="checkoutGcashRef" class="mono-font" required placeholder="ENTER 13-DIGIT REF...">
+                </div>
+                <div class="input-group">
+                    <label class="mono-font">&gt; PROOF_OF_PAYMENT</label>
+                    <input type="file" id="checkoutProof" class="mono-font" accept="image/*" required style="padding: 10px; background: #111; border: 1px solid #333; color: white; width: 100%;">
+                </div>
+
+                <div id="checkoutStatus" class="mono-font status-text" style="color: var(--yellow); margin-top: 10px; text-align: center;"></div>
+
+                <button type="submit" id="confirmCheckoutBtn" class="btn-dark btn-full" style="background: var(--yellow); color: var(--black); font-size: 18px; padding: 15px; margin-top: 20px;">
+                    CONFIRM & SEAL MANIFEST
+                </button>
+            </form>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="sharedOverlay"></div>
 
     <div class="modal-overlay" id="loginModal" style="background: transparent;"> 
@@ -248,21 +286,21 @@
             </div>
             <form id="loginForm">
                 <div class="input-group">
-                    <label class="mono-font">> EMAIL_ID</label>
+                    <label class="mono-font">&gt; EMAIL_ID</label>
                     <input type="email" id="authEmail" class="mono-font" required placeholder="ENTER EMAIL...">
                 </div>
                 <div class="input-group">
-                    <label class="mono-font">> PASSKEY</label>
+                    <label class="mono-font">&gt; PASSKEY</label>
                     <input type="password" id="authPassword" class="mono-font" required placeholder="••••••••">
                 </div>
 
                 <div id="signupFields" style="display: none;">
                     <div class="input-group">
-                        <label class="mono-font">> BUSINESS_NAME</label>
+                        <label class="mono-font">&gt; BUSINESS_NAME</label>
                         <input type="text" id="businessName" class="mono-font" placeholder="LEGAL ENTITY NAME...">
                     </div>
                     <div class="input-group">
-                        <label class="mono-font">> CONTACT_NUMBER</label>
+                        <label class="mono-font">&gt; CONTACT_NUMBER</label>
                         <input type="text" id="contactNumber" class="mono-font" placeholder="09XX XXX XXXX">
                     </div>
                 </div>
@@ -283,7 +321,7 @@
             <h2 class="brand-font">MANIFEST</h2>
             <button class="close-btn" id="closeManifestBtn">✖</button>
         </div>
-        
+         
         <div class="sidebar-content" id="manifestItems">
             </div>
 
@@ -297,10 +335,8 @@
             </button>
         </div>
     </div>
-    
+     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="index.js"></script>
-    <!-- Admin portal accessible via /admin.html -->
-
-</body>
+    <script src="index.js" defer></script>
+    </body>
 </html>

@@ -23,8 +23,30 @@ const closeCheckoutBtn = document.getElementById('closeCheckoutBtn');
 const checkoutName = document.getElementById('checkoutName');
 const checkoutContact = document.getElementById('checkoutContact');
 const checkoutAddress = document.getElementById('checkoutAddress');
-const checkoutPayment = document.getElementById('checkoutPayment');
+const checkoutGcashRef = document.getElementById('checkoutGcashRef');
+const checkoutProof = document.getElementById('checkoutProof');
 const checkoutStatus = document.getElementById('checkoutStatus');
+const confirmCheckoutBtn = document.getElementById('confirmCheckoutBtn');
+
+// Supplier Auth Modal Elements
+const loginModal = document.getElementById('loginModal');
+const openLoginBtn = document.getElementById('openLoginBtn'); // SUPPLIER LOGIN BUTTON
+const closeLoginBtn = document.getElementById('closeLoginBtn');
+const loginForm = document.getElementById('loginForm');
+const authTitle = document.getElementById('authTitle');
+const authEmail = document.getElementById('authEmail');
+const authPassword = document.getElementById('authPassword');
+const authSubmitBtn = document.getElementById('authSubmitBtn');
+const authToggle = document.getElementById('authToggle');
+const signupFields = document.getElementById('signupFields');
+const businessName = document.getElementById('businessName');
+const contactNumber = document.getElementById('contactNumber');
+const loginStatus = document.getElementById('loginStatus');
+
+// --- STATE MANAGEMENT ---
+let manifest = [];
+let availableInventory = [];
+let isSignUpMode = false;
 
 // --- DYNAMIC TOAST & PRODUCT DETAILS UI ---
 const toastContainer = document.createElement('div');
@@ -39,13 +61,11 @@ window.showToast = function(message) {
     
     toastContainer.appendChild(toast);
     
-    // Animate In
     requestAnimationFrame(() => {
         toast.style.opacity = '1';
         toast.style.transform = 'translateY(0)';
     });
     
-    // Animate Out & Remove
     setTimeout(() => {
         toast.style.opacity = '0';
         toast.style.transform = 'translateY(20px)';
@@ -59,7 +79,7 @@ detailsModal.style.cssText = "display:none; position:fixed; top:50%; left:50%; t
 document.body.appendChild(detailsModal);
 
 window.openProductDetails = function(productId) {
-    const product = availableInventory.find(p => p.id === productId);
+    const product = availableInventory.find(p => String(p.id) === String(productId));
     if (!product) return;
     
     detailsModal.innerHTML = `
@@ -78,12 +98,7 @@ window.openProductDetails = function(productId) {
     detailsModal.style.display = 'block';
 };
 
-// --- STATE ---
-let manifest = [];
-let availableInventory = [];
-
-// --- 1. INVENTORY: FETCH & DYNAMIC RENDERING ---
-
+// --- 1. INVENTORY: FETCH & RENDERING ---
 async function fetchInventory() {
     const { data, error } = await _supabase
         .from('product_variants')
@@ -91,16 +106,18 @@ async function fetchInventory() {
             id, 
             type_name, 
             stock_kg,
-            products (id, brand_name, rescue_price, market_price, description)
-        `)
-        .eq('products.is_active', true);
+            products (id, brand_name, rescue_price, market_price, description, is_active)
+        `);
 
     if (error) {
         console.error("Error fetching inventory:", error);
         return;
     }
     
-    const grouped = data.reduce((acc, item) => {
+    // Filter out rows where products is null or not active
+    const activeData = data.filter(item => item.products && item.products.is_active === true);
+    
+    const grouped = activeData.reduce((acc, item) => {
         const pId = item.products.id;
         if (!acc[pId]) {
             acc[pId] = { ...item.products, variants: [] };
@@ -133,7 +150,7 @@ function renderProductCards() {
                     <div class="product-placeholder brand-font" style="display:flex; align-items:center; justify-content:center; height:180px; background:#111; color:var(--yellow, #f1c40f); font-size:40px;">
                         ${product.brand_name.split(' ')[0]}
                     </div>
-                    <span class="price-tag" style="position: absolute; bottom: 10px; right: 10px; background: var(--yellow, #f1c40f); color: #000; padding: 5px 10px; font-weight: bold; border: 2px solid #000; box-shadow: 2px 2px 0px #000;"><span style="font-family: sans-serif;">₱</span>${product.rescue_price} / KG</span>
+                    <span class="price-tag" style="position: absolute; bottom: 10px; right: 10px; background: var(--yellow, #f1c40f); color: #000; padding: 5px 10px; font-weight: bold; border: 2px solid #000; box-shadow: 2px 2px 0px #000;"><span>₱</span>${product.rescue_price} / KG</span>
                 </div>
                 
                 <div class="card-body" style="padding: 15px;">
@@ -143,7 +160,7 @@ function renderProductCards() {
                         <div class="pricing-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
                             <div class="price-box" style="border: 2px solid #ddd; padding: 10px; display: flex; flex-direction: column; justify-content: center; background: #f9f9f9;">
                                 <span class="p-label" style="font-size: 0.7rem; font-weight: 800; color: #555; margin-bottom: 5px;">REGULAR PRICE</span>
-                                <span class="p-value" style="font-size: 1.6rem; font-weight: 900; color: #ccc; line-height: 1;"><span style="font-family: sans-serif;">₱</span>${product.market_price}</span>
+                                <span class="p-value" style="font-size: 1.6rem; font-weight: 900; color: #ccc; line-height: 1;"><span>₱</span>${product.market_price}</span>
                             </div>
                             <div class="price-box highlight" style="border: 2px solid #000; padding: 10px; display: flex; flex-direction: column; justify-content: center; background: var(--yellow, #f1c40f); box-shadow: 3px 3px 0px #e0e0e0;">
                                 <span class="p-label" style="font-size: 0.7rem; font-weight: 800; color: #000; margin-bottom: 5px;">SURPLUS PRICE</span>
@@ -173,15 +190,18 @@ function renderProductCards() {
 }
 
 // --- 2. MANIFEST CORE LOGIC ---
-
 window.addToManifest = function(productId, button) {
     const card = button.closest('.product-card');
     const variantId = card.querySelector('.variant-select').value;
     const weight = parseInt(card.querySelector('.weight-select').value);
-    const product = availableInventory.find(p => p.id === productId);
-    const variant = product.variants.find(v => v.id === variantId);
+    
+    const product = availableInventory.find(p => String(p.id) === String(productId));
+    const variant = product.variants.find(v => String(v.id) === String(variantId));
 
-    const existing = manifest.find(item => item.variantId === variantId);
+    if (!product || !variant) return;
+
+    const existing = manifest.find(item => String(item.variantId) === String(variantId));
+    
     if (existing) {
         existing.weight += weight;
     } else {
@@ -197,7 +217,6 @@ window.addToManifest = function(productId, button) {
     saveManifestToLocalStorage();
     showToast(`+${weight}KG ${product.brand_name.split(' ')[0]} ADDED`);
 
-    // Auto-open manifest sidebar after adding an item
     sharedOverlay.classList.add('active');
     manifestSidebar.classList.add('active');
 };
@@ -239,7 +258,6 @@ window.removeItem = function(index) {
     saveManifestToLocalStorage();
 };
 
-// --- Local Storage Management for Local Guest Cart Drafts ---
 function saveManifestToLocalStorage() {
     localStorage.setItem('uglyph_guest_manifest', JSON.stringify(manifest));
 }
@@ -257,39 +275,47 @@ function loadManifestFromLocalStorage() {
 }
 
 // --- 3. CHECKOUT & SUBMISSION HANDLING ---
-
-// Open Checkout Modal
 sealManifestBtn.addEventListener('click', () => {
     if (manifest.length === 0) return alert("Manifest is empty.");
     manifestSidebar.classList.remove('active');
+    
+    checkoutModal.style.display = 'block';
+    checkoutModal.style.position = 'fixed';
+    checkoutModal.style.top = '50%';
+    checkoutModal.style.left = '50%';
+    checkoutModal.style.transform = 'translate(-50%, -50%)';
+    checkoutModal.style.zIndex = '1002';
+    
     checkoutModal.classList.add('active');
     sharedOverlay.classList.add('active');
 });
 
-// Handle Checkout Submission
 checkoutForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const name = checkoutName.value;
-    const contact = checkoutContact.value;
-    const address = checkoutAddress.value;
-    const paymentMethod = checkoutPayment.value;
+    const name = checkoutName ? checkoutName.value : '';
+    const contact = checkoutContact ? checkoutContact.value : '';
+    const address = checkoutAddress ? checkoutAddress.value : '';
+    const gcashRef = checkoutGcashRef ? checkoutGcashRef.value : '';
+    const proofFile = checkoutProof && checkoutProof.files.length > 0 ? checkoutProof.files[0] : null;
 
-    checkoutStatus.textContent = '[SYSTEM] INITIALIZING SUBMISSION PROTOCOL...';
+    if (checkoutStatus) checkoutStatus.textContent = '[SYSTEM] INITIALIZING SUBMISSION PROTOCOL...';
     
-    const confirmBtn = document.getElementById('confirmCheckoutBtn');
-    confirmBtn.innerText = "PROCESSING MANIFEST...";
-    confirmBtn.disabled = true;
+    if (confirmCheckoutBtn) {
+        confirmCheckoutBtn.innerText = "PROCESSING MANIFEST...";
+        confirmCheckoutBtn.disabled = true;
+    }
 
-    try {
+try {
         const totalAmount = manifest.reduce((sum, item) => sum + (item.weight * item.price), 0);
 
+        // 1. Insert Main Manifest Record
         const { data: manifestRecord, error: mError } = await _supabase
             .from('manifests')
             .insert([{
                 customer_name: name,
-                delivery_address: `${address} (Contact: ${contact})`,
-                payment_method: paymentMethod,
+                delivery_address: `${address} (Contact: ${contact}) | GCash Ref: ${gcashRef}`,
+                payment_method: 'GCASH',
                 total_amount: totalAmount,
                 status: 'PENDING'
             }])
@@ -297,9 +323,11 @@ checkoutForm.addEventListener('submit', async (e) => {
             .single();
 
         if (mError) throw mError;
+        const manifestId = manifestRecord.id;
 
+        // 2. Insert Associated Line Items
         const lineItems = manifest.map(item => ({
-            manifest_id: manifestRecord.id,
+            manifest_id: manifestId,
             product_variant_id: item.variantId,
             quantity_kg: item.weight,
             price_at_time: item.price,
@@ -312,121 +340,13 @@ checkoutForm.addEventListener('submit', async (e) => {
 
         if (itemsError) throw itemsError;
 
-        manifest = [];
-        renderManifest();
-        saveManifestToLocalStorage();
-        closeAllOverlays();
-        checkoutForm.reset();
-
-        if (paymentMethod !== 'CASH_ON_DELIVERY' && manifestRecord) {
-            showReceiptUploadPrompt(manifestRecord.id, paymentMethod);
-        } else {
-            showToast('MANIFEST SEALED. AWAITING DISPATCH VERIFICATION.');
-        }
-
-    } catch (err) {
-        console.error(err);
-        checkoutStatus.textContent = `[ERROR] ${err.message.toUpperCase()}`;
-        confirmBtn.disabled = false;
-        confirmBtn.innerText = "CONFIRM & SEAL MANIFEST";
-    }
-});
-
-// --- Image Compression Utility ---
-// Compresses an image file before upload, keeping max width/height within limits
-function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.7) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = event => {
-            const img = new Image();
-            img.src = event.target.result;
-            img.onload = () => {
-                let width = img.width;
-                let height = img.height;
-
-                // Scale down maintaining aspect ratio
-                if (width > maxWidth || height > maxHeight) {
-                    if (width > height) {
-                        height = Math.round((height * maxWidth) / width);
-                        width = maxWidth;
-                    } else {
-                        width = Math.round((width * maxHeight) / height);
-                        height = maxHeight;
-                    }
-                }
-
-                const canvas = document.createElement('canvas');
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-
-                // Export to compressed JPEG blob
-                canvas.toBlob((blob) => {
-                    resolve(blob);
-                }, 'image/jpeg', quality);
-            };
-            img.onerror = err => reject(err);
-        };
-        reader.onerror = err => reject(err);
-    });
-}
-
-
-// --- Receipt Upload Workflow ---
-
-function showReceiptUploadPrompt(manifestId, paymentMethod) {
-    const existing = document.getElementById('receiptUploadModal');
-    if (existing) existing.remove();
-
-    const modal = document.createElement('div');
-    modal.id = 'receiptUploadModal';
-    modal.style.cssText = "position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:1002; background:#111; border:3px solid var(--yellow,#FFD600); padding:30px; width:90%; max-width:420px; color:#fff;";
-    modal.innerHTML = `
-        <h2 class="brand-font" style="color:var(--yellow,#FFD600); font-size:24px; margin-bottom:8px;">UPLOAD RECEIPT</h2>
-        <p class="mono-font" style="font-size:13px; color:#aaa; margin-bottom:20px;">
-            Upload your ${paymentMethod.replace(/_/g,' ')} payment screenshot so admin can verify your order.
-        </p>
-        <input type="file" id="receiptFileInput" accept="image/*" style="width:100%; padding:12px; background:#222; border:2px solid #444; color:#fff; margin-bottom:15px; font-family:'JetBrains Mono',monospace;">
-        <div style="display:flex; gap:10px;">
-            <button id="submitReceiptBtn" class="btn-dark" style="flex:1; padding:14px; font-size:15px; background:var(--yellow,#FFD600); color:#111; border:none; font-family:'Anton',sans-serif; text-transform:uppercase; cursor:pointer;">
-                SUBMIT RECEIPT
-            </button>
-            <button id="skipReceiptBtn" class="mono-font" style="padding:14px; border:1px solid #444; background:none; color:#888; cursor:pointer; font-size:12px;">
-                SKIP
-            </button>
-        </div>
-        <div id="receiptUploadStatus" class="mono-font" style="margin-top:15px; font-size:12px; color:#aaa; text-align:center;"></div>
-    `;
-    document.body.appendChild(modal);
-    sharedOverlay.classList.add('active');
-
-    document.getElementById('skipReceiptBtn').onclick = () => {
-        modal.remove();
-        closeAllOverlays();
-        showToast('MANIFEST SEALED. UPLOAD RECEIPT LATER TO FINALIZE VERIFICATION.');
-    };
-
-    document.getElementById('submitReceiptBtn').onclick = async () => {
-        const file = document.getElementById('receiptFileInput').files[0];
-        if (!file) { document.getElementById('receiptUploadStatus').textContent = 'Please select a file.'; return; }
-
-        const statusEl = document.getElementById('receiptUploadStatus');
-        const submitBtn = document.getElementById('submitReceiptBtn');
-        submitBtn.textContent = 'COMPRESSING...';
-        submitBtn.disabled = true;
-        statusEl.textContent = 'Optimizing image...';
-
-        try {
-            // Compress the image before uploading (Max 800x800, 70% Quality JPEG)
-            const compressedBlob = await compressImage(file, 800, 800, 0.7);
-
-            statusEl.textContent = 'Uploading to manifest...';
-            submitBtn.textContent = 'UPLOADING...';
-
-            // Ensure filename reflects the compression and format change
-            const originalName = file.name.split('.').slice(0, -1).join('.');
+        // 3. Process Proof of Payment Attachment
+        if (proofFile) {
+            if (checkoutStatus) checkoutStatus.textContent = '[SYSTEM] OPTIMIZING PROOF OF PAYMENT...';
+            const compressedBlob = await compressImage(proofFile, 800, 800, 0.7);
+            
+            if (checkoutStatus) checkoutStatus.textContent = '[SYSTEM] UPLOADING PROOF TO STORAGE...';
+            const originalName = proofFile.name.split('.').slice(0, -1).join('.');
             const filePath = `guest_manifests/${manifestId}/${Date.now()}_${originalName}_compressed.jpg`;
             
             const { error: uploadError } = await _supabase.storage
@@ -443,36 +363,180 @@ function showReceiptUploadPrompt(manifestId, paymentMethod) {
             await _supabase.from('manifests')
                 .update({ receipt_url: urlData.publicUrl })
                 .eq('id', manifestId);
-
-            statusEl.textContent = '✓ RECEIPT UPLOADED SUCCESSFULLY';
-            statusEl.style.color = '#22c55e';
-            setTimeout(() => { modal.remove(); closeAllOverlays(); showToast('RECEIPT SUBMITTED. AWAITING VERIFICATION.'); }, 1500);
-        } catch (err) {
-            statusEl.textContent = `Upload failed: ${err.message}`;
-            statusEl.style.color = '#D32F2F';
-            submitBtn.textContent = 'RETRY';
-            submitBtn.disabled = false;
         }
-    };
+
+        manifest = [];
+        renderManifest();
+        saveManifestToLocalStorage();
+        closeAllOverlays();
+        checkoutForm.reset();
+        
+        showToast('MANIFEST SEALED. AWAITING DISPATCH VERIFICATION.');
+
+    } catch (err) {
+        console.error("Submission Error:", err);
+        if (checkoutStatus) checkoutStatus.textContent = `[ERROR] ${err.message.toUpperCase()}`;
+        if (confirmCheckoutBtn) {
+            confirmCheckoutBtn.disabled = false;
+            confirmCheckoutBtn.innerText = "CONFIRM & SEAL MANIFEST";
+        }
+    }
+});
+
+// Image Compression Utility
+function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.7) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = event => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth || height > maxHeight) {
+                    if (width > height) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    } else {
+                        width = Math.round((width * maxHeight) / height);
+                        height = maxHeight;
+                    }
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob((blob) => {
+                    resolve(blob);
+                }, 'image/jpeg', quality);
+            };
+            img.onerror = err => reject(err);
+        };
+        reader.onerror = err => reject(err);
+    });
 }
 
-// --- 4. UI CONTROLS ---
+// --- 4. SUPPLIER AUTHENTICATION (LOGIN & SIGNUP) ---
+// Modifying this block to redirect straight to admin.html on click
+if (openLoginBtn) {
+    openLoginBtn.addEventListener('click', () => {
+        window.location.href = 'admin.html';
+    });
+}
 
+if (authToggle) {
+    authToggle.addEventListener('click', () => {
+        isSignUpMode = !isSignUpMode;
+        if (isSignUpMode) {
+            authTitle.textContent = "SUPPLIER SIGN UP";
+            signupFields.style.display = "block";
+            authSubmitBtn.textContent = "REGISTER PROFILE";
+            authToggle.textContent = "ALREADY HAVE AN ACCOUNT? LOG IN";
+            businessName.required = true;
+            contactNumber.required = true;
+        } else {
+            authTitle.textContent = "SUPPLIER LOGIN";
+            signupFields.style.display = "none";
+            authSubmitBtn.textContent = "AUTHENTICATE";
+            authToggle.textContent = "DON'T HAVE AN ACCOUNT? SIGN UP";
+            businessName.required = false;
+            contactNumber.required = false;
+        }
+    });
+}
+
+if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = authEmail.value;
+        const password = authPassword.value;
+        
+        if (loginStatus) {
+            loginStatus.style.color = 'var(--yellow)';
+            loginStatus.textContent = '[SYSTEM] VERIFYING ID PROTOCOLS...';
+        }
+        authSubmitBtn.disabled = true;
+
+        try {
+            if (isSignUpMode) {
+                const { data: authData, error: signUpError } = await _supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            business_name: businessName.value,
+                            contact_number: contactNumber.value,
+                            role: 'supplier'
+                        }
+                    }
+                });
+
+                if (signUpError) throw signUpError;
+
+                if (loginStatus) {
+                    loginStatus.style.color = '#00ff00';
+                    loginStatus.textContent = '[SUCCESS] REGISTRATION COMPLETE. REDIRECTING...';
+                }
+            } else {
+                const { data: authData, error: signInError } = await _supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (signInError) throw signInError;
+
+                if (loginStatus) {
+                    loginStatus.style.color = '#00ff00';
+                    loginStatus.textContent = '[ACCESS GRANTED] TERMINAL SECURED. LOADING...';
+                }
+            }
+
+            setTimeout(() => {
+                window.location.href = 'admin.html';
+            }, 800);
+
+        } catch (err) {
+            console.error("Authentication Error:", err);
+            if (loginStatus) {
+                loginStatus.style.color = 'red';
+                loginStatus.textContent = `[CRITICAL_FAIL] ${err.message.toUpperCase()}`;
+            }
+            authSubmitBtn.disabled = false;
+        }
+    });
+}
+
+// --- 5. UI INTERFACE OVERLAYS CLOSING ---
 const closeAllOverlays = () => {
     sharedOverlay.classList.remove('active');
     manifestSidebar.classList.remove('active');
-    if (checkoutModal) checkoutModal.classList.remove('active');
+    
+    if (checkoutModal) {
+        checkoutModal.classList.remove('active');
+        checkoutModal.style.display = 'none'; 
+    }
+    
+    if (loginModal) {
+        loginModal.style.display = 'none';
+    }
+    
     if (detailsModal) detailsModal.style.display = 'none';
     
-    const receiptModal = document.getElementById('receiptUploadModal');
-    if (receiptModal) receiptModal.remove();
-    
-    // Clear checkout error descriptions upon dialog closure
     if (checkoutStatus) checkoutStatus.textContent = "";
-    const confirmBtn = document.getElementById('confirmCheckoutBtn');
-    if (confirmBtn) {
-        confirmBtn.disabled = false;
-        confirmBtn.innerText = "CONFIRM & SEAL MANIFEST";
+    if (loginStatus) loginStatus.textContent = "";
+    if (confirmCheckoutBtn) {
+        confirmCheckoutBtn.disabled = false;
+        confirmCheckoutBtn.innerText = "CONFIRM & SEAL MANIFEST";
+    }
+    if (authSubmitBtn) {
+        authSubmitBtn.disabled = false;
+        authSubmitBtn.innerText = isSignUpMode ? "REGISTER PROFILE" : "AUTHENTICATE";
     }
 
     document.body.style.overflow = 'auto'; 
@@ -480,9 +544,10 @@ const closeAllOverlays = () => {
 
 sharedOverlay.addEventListener('click', closeAllOverlays);
 closeCheckoutBtn.addEventListener('click', closeAllOverlays);
+if (closeLoginBtn) closeLoginBtn.addEventListener('click', closeAllOverlays);
 openManifestBtn.addEventListener('click', () => { sharedOverlay.classList.add('active'); manifestSidebar.classList.add('active'); });
 closeManifestBtn.addEventListener('click', closeAllOverlays);
 
-// --- INITIALIZE BASE DATA ---
+// --- INITIALIZE SYSTEM RUNTIME ---
 fetchInventory();
 loadManifestFromLocalStorage();
