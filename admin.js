@@ -167,7 +167,8 @@ window.filterOrders = function(status, btn) {
 // =============================================================================
 
 async function loadDashboard() {
-    document.getElementById('dashTimestamp').textContent =
+    const tsEl = document.getElementById('dashTimestamp');
+    if (tsEl) tsEl.textContent =
         `LAST UPDATED: ${new Date().toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' })}`;
 
     const [ordersRes, productsRes] = await Promise.all([
@@ -199,12 +200,22 @@ async function loadDashboard() {
 }
 
 async function loadRecentOrders() {
-    const { data, error } = await _sb
+    let { data, error } = await _sb
         .from('manifests')
-        .select('id, total_amount, status, created_at, supplier_id, suppliers(business_name)')
+        .select('id, total_amount, status, created_at, suppliers(business_name)')
         .neq('status', 'DRAFT')
         .order('created_at', { ascending: false })
         .limit(8);
+
+    // Fallback without the join if it fails (e.g. missing FK relationship)
+    if (error) {
+        ({ data, error } = await _sb
+            .from('manifests')
+            .select('id, total_amount, status, created_at')
+            .neq('status', 'DRAFT')
+            .order('created_at', { ascending: false })
+            .limit(8));
+    }
 
     const container = document.getElementById('recentOrdersList');
     if (error || !data || data.length === 0) {
@@ -215,7 +226,7 @@ async function loadRecentOrders() {
     container.innerHTML = data.map(o => `
         <div class="recent-row">
             <div style="flex:1; min-width:0;">
-                <div class="recent-customer">${o.suppliers?.business_name || 'Unknown Customer'}</div>
+                <div class="recent-customer">${o.suppliers?.business_name || 'Customer'}</div>
                 <div class="recent-id">#${o.id.slice(0,8).toUpperCase()} · ${formatDate(o.created_at)}</div>
             </div>
             <span class="recent-amount">₱${(o.total_amount || 0).toLocaleString()}</span>
@@ -441,12 +452,9 @@ async function loadOrders(statusFilter = 'PENDING') {
         .from('manifests')
         .select(`
             id, created_at, total_amount, status, payment_method, receipt_url,
+            customer_name, delivery_address,
             supplier_id,
-            suppliers (business_name, contact_number),
-            manifest_items (
-                quantity_kg, price_at_time, line_total,
-                product_variants (type_name, products (brand_name))
-            )
+            suppliers (business_name, contact_number)
         `)
         .neq('status', 'DRAFT')
         .order('created_at', { ascending: false });
@@ -455,7 +463,6 @@ async function loadOrders(statusFilter = 'PENDING') {
 
     const { data, error } = await query;
 
-    // Update pipeline counts
     updatePipelineCounts();
 
     if (error) {
@@ -467,6 +474,20 @@ async function loadOrders(statusFilter = 'PENDING') {
         container.innerHTML = `<div class="empty-state"><p>No ${label} found.</p></div>`;
         return;
     }
+
+    // Fetch items separately to avoid FK join issues
+    const ids = data.map(o => o.id);
+    const { data: itemsData, error: itemsErr } = await _sb
+        .from('manifest_items')
+        .select('manifest_id, quantity_kg, price_at_time, line_total, product_variant_id, product_variants (type_name, products (brand_name))')
+        .in('manifest_id', ids);
+
+    if (itemsErr) console.error('manifest_items error:', itemsErr);
+
+    // Attach items to their parent order
+    data.forEach(order => {
+        order.manifest_items = itemsData ? itemsData.filter(i => i.manifest_id === order.id) : [];
+    });
 
     container.innerHTML = `<div class="orders-list">${data.map(renderOrderCard).join('')}</div>`;
 }
@@ -483,29 +504,23 @@ async function updatePipelineCounts() {
     if (badge) { badge.textContent = pending; badge.style.display = pending > 0 ? 'inline-flex' : 'none'; }
 }
 
+function parseDeliveryAddress(raw) {
+    if (!raw) return { address: '—', contact: '—', gcash: '—' };
+    const parts = raw.split(' | GCash Ref: ');
+    const gcash = parts[1] ? parts[1].trim() : '—';
+    const addrContact = parts[0] || '';
+    const contactMatch = addrContact.match(/\(Contact:\s*(.+?)\)\s*$/);
+    const contact = contactMatch ? contactMatch[1].trim() : '—';
+    const address = addrContact.replace(/\s*\(Contact:\s*.+?\)\s*$/, '').trim();
+    return { address: address || '—', contact: contact || '—', gcash: gcash || '—' };
+}
+
 function renderOrderCard(order) {
     const customer = order.suppliers || {};
     const items = order.manifest_items || [];
-    const initials = (customer.business_name || 'UK').slice(0, 2).toUpperCase();
-    const nextAction = NEXT_STATUS[order.status];
-
-    const itemsHTML = items.map(item => {
-        const pv = item.product_variants || {};
-        const p = pv.products || {};
-        return `<div class="order-item">
-            <div>
-                <div class="order-item-name">${p.brand_name || '—'}</div>
-                <div class="order-item-variant">${pv.type_name || ''} · ${item.quantity_kg} kg @ ₱${item.price_at_time}/kg</div>
-            </div>
-            <span class="order-item-price">₱${(item.line_total || 0).toLocaleString()}</span>
-        </div>`;
-    }).join('');
-
-    const isDone = order.status === 'DELIVERED' || order.status === 'REJECTED';
-    const actionBtns = isDone ? '' : `
-        ${nextAction ? `<button class="order-action oa-${nextAction.next.toLowerCase()}" onclick="updateOrderStatus('${order.id}','${nextAction.next}',this)">${nextAction.label}</button>` : ''}
-        ${order.status === 'PENDING' ? `<button class="order-action oa-reject" onclick="updateOrderStatus('${order.id}','REJECTED',this)">Reject</button>` : ''}
-    `;
+    const name = order.customer_name || customer.business_name || 'Unknown Customer';
+    const initials = name.slice(0, 2).toUpperCase();
+    const info = parseDeliveryAddress(order.delivery_address);
 
     return `<div class="order-card" id="order-${order.id}">
         <div class="order-card-top">
@@ -521,12 +536,16 @@ function renderOrderCard(order) {
         <div class="order-card-body">
             <div class="order-customer-row">
                 <div class="order-avatar">${initials}</div>
-                <div>
-                    <div class="order-customer-name">${customer.business_name || 'Unknown Customer'}</div>
-                    <div class="order-customer-contact">${customer.contact_number || ''}</div>
+                <div class="order-customer-details">
+                    <div class="order-customer-name">${name}</div>
+                    <div class="order-info-grid">
+                        <span class="order-info-label">Orders</span><span class="order-info-val">${items.map(item => { const pv = item.product_variants || {}; const p = pv.products || {}; return `${p.brand_name || '—'} · ${pv.type_name || ''} · ${item.quantity_kg}kg`; }).join('<br>') || '—'}</span>
+                        <span class="order-info-label">Contact</span><span class="order-info-val">${info.contact}</span>
+                        <span class="order-info-label">Address</span><span class="order-info-val">${info.address}</span>
+                        <span class="order-info-label">GCash Ref</span><span class="order-info-val">${info.gcash}</span>
+                    </div>
                 </div>
             </div>
-            <div class="order-items-list">${itemsHTML || '<p style="color:var(--text-3); font-size:13px;">No items</p>'}</div>
         </div>
         <div class="order-card-footer">
             <div>
@@ -534,22 +553,39 @@ function renderOrderCard(order) {
                 <span class="order-total">₱${(order.total_amount || 0).toLocaleString()}</span>
             </div>
             <div class="order-actions">
-                <button class="order-action oa-receipt" onclick="viewReceipt('${order.id}','${order.receipt_url || ''}','${order.payment_method || ''}')">View Receipt</button>
-                ${actionBtns}
+                <button class="order-action oa-receipt" onclick="viewReceipt('${order.id}','${order.receipt_url || ''}','${order.payment_method || ''}','${order.status}')">View Receipt</button>
+                ${{ 'VERIFIED': `<button class="order-action oa-packaging" onclick="updateOrderStatus('${order.id}','PACKAGING',this)">Move to Packaging</button>`,
+                    'PACKAGING': `<button class="order-action oa-shipping"  onclick="updateOrderStatus('${order.id}','SHIPPING',this)">Move to Shipping</button>`,
+                    'SHIPPING':  `<button class="order-action oa-delivered" onclick="updateOrderStatus('${order.id}','DELIVERED',this)">Mark Delivered</button>`,
+                  }[order.status] || ''}
             </div>
         </div>
     </div>`;
 }
 
 window.updateOrderStatus = async function(manifestId, newStatus, btn) {
+    const btnLabel = btn ? btn.textContent : newStatus;
     if (btn) { btn.disabled = true; btn.textContent = '...'; }
+
     const { error } = await _sb.from('manifests').update({ status: newStatus }).eq('id', manifestId);
     if (error) {
         showToast('Error: ' + error.message, 'error');
-        if (btn) { btn.disabled = false; btn.textContent = btn.dataset.label || 'RETRY'; }
+        if (btn) { btn.disabled = false; btn.textContent = btnLabel; }
         return;
     }
-    showToast(`Status → ${newStatus}`, 'success');
+
+    // Verify the update actually stuck (catches silent RLS blocks)
+    const { data: verify } = await _sb
+        .from('manifests').select('status').eq('id', manifestId).maybeSingle();
+
+    if (verify && verify.status !== newStatus) {
+        showToast('Permission denied — add an admin UPDATE policy on manifests in Supabase SQL Editor', 'error');
+        if (btn) { btn.disabled = false; btn.textContent = btnLabel; }
+        return;
+    }
+
+    showToast(`Order → ${newStatus}`, 'success');
+    document.getElementById('receiptModal').style.display = 'none';
     loadOrders(document.getElementById('orderStatusFilter').value);
     loadDashboard();
 };
@@ -558,11 +594,12 @@ window.updateOrderStatus = async function(manifestId, newStatus, btn) {
 // RECEIPT MODAL
 // =============================================================================
 
-window.viewReceipt = function(orderId, receiptUrl, paymentMethod) {
+window.viewReceipt = function(orderId, receiptUrl, paymentMethod, status) {
     const modal = document.getElementById('receiptModal');
     const img = document.getElementById('receiptImg');
     const noImg = document.getElementById('receiptNoImg');
     const info = document.getElementById('receiptOrderInfo');
+    const actions = document.getElementById('receiptActions');
 
     info.textContent = `ORDER #${orderId.slice(0,8).toUpperCase()} · ${(paymentMethod || '').replace(/_/g,' ')}`;
 
@@ -574,6 +611,18 @@ window.viewReceipt = function(orderId, receiptUrl, paymentMethod) {
         img.style.display = 'none';
         noImg.style.display = 'block';
     }
+
+    if (status === 'PENDING') {
+        actions.innerHTML = `
+            <button class="order-action oa-verified" onclick="updateOrderStatus('${orderId}','VERIFIED',this)">Verify Order</button>
+            <button class="order-action oa-reject"   onclick="updateOrderStatus('${orderId}','REJECTED',this)">Reject</button>
+        `;
+        actions.style.display = 'flex';
+    } else {
+        actions.innerHTML = '';
+        actions.style.display = 'none';
+    }
+
     modal.style.display = 'flex';
 };
 

@@ -674,8 +674,12 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
 }
-.order-customer-name { font-size: 15px; font-weight: 700; }
+.order-customer-name { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
 .order-customer-contact { font-size: 12px; color: var(--text-2); margin-top: 1px; }
+.order-customer-details { flex: 1; min-width: 0; }
+.order-info-grid { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: baseline; }
+.order-info-label { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+.order-info-val { font-size: 12px; color: var(--text-2); word-break: break-word; }
 
 .order-items-list { margin-bottom: 0; }
 .order-item {
@@ -719,6 +723,9 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .order-action:disabled { opacity: 0.5; cursor: not-allowed; }
 .oa-verify    { color: #166534; border-color: #86efac; background: #f0fdf4; }
 .oa-verify:hover { background: #dcfce7; }
+.oa-verified  { color: #166534; border-color: #86efac; background: #f0fdf4; }
+.oa-verified:hover { background: #dcfce7; }
+
 .oa-packaging { color: #1e40af; border-color: #93c5fd; background: #eff6ff; }
 .oa-packaging:hover { background: #dbeafe; }
 .oa-shipping  { color: #6b21a8; border-color: #d8b4fe; background: #faf5ff; }
@@ -1010,6 +1017,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .receipt-img-wrap img { width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border); }
 .receipt-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 40px 20px; text-align: center; }
 .receipt-empty p { font-size: 13px; color: var(--text-3); }
+.receipt-modal-actions { display: flex; gap: 8px; justify-content: flex-end; padding: 14px 20px; border-top: 1px solid var(--border); }
 
 /* ==========================================================================
    TOAST
