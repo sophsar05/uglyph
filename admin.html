@@ -11,44 +11,6 @@
 </head>
 <body>
 
-<!-- ======================================================  AUTH GATE  -->
-<div id="authGate" class="auth-screen">
-    <div class="auth-card">
-        <div class="auth-brand">
-            <span class="brand-font auth-logo">UGLYPH</span>
-            <span class="auth-pill">ADMIN</span>
-        </div>
-        <h1 class="auth-title">Welcome back</h1>
-        <p class="auth-subtitle">Sign in to access the admin dashboard</p>
-        <form id="adminLoginForm" class="auth-form">
-            <div class="field-group">
-                <label class="field-label">Email address</label>
-                <input type="email" id="adminEmail" class="field-input" placeholder="you@example.com" required autocomplete="email">
-            </div>
-            <div class="field-group">
-                <label class="field-label">Password</label>
-                <input type="password" id="adminPassword" class="field-input" placeholder="••••••••" required autocomplete="current-password">
-            </div>
-            <button type="submit" class="btn-primary btn-full">Sign In</button>
-        </form>
-        <p id="authStatus" class="auth-feedback"></p>
-        <a href="index.html" class="auth-back">← Back to store</a>
-    </div>
-</div>
-
-<!-- ====================================================== ACCESS DENIED  -->
-<div id="accessDenied" class="auth-screen" style="display:none;">
-    <div class="auth-card denied-card">
-        <div class="denied-icon">🔒</div>
-        <h1 class="auth-title">Access Denied</h1>
-        <p class="auth-subtitle">Your account doesn't have admin privileges.</p>
-        <div class="denied-hint">
-            <p>Run this SQL in Supabase to grant access:</p>
-            <code>UPDATE auth.users SET raw_app_meta_data = raw_app_meta_data || '{"role":"admin"}' WHERE email = 'your@email.com';</code>
-        </div>
-        <button id="deniedLogoutBtn" class="btn-outline btn-full">Logout & Try Again</button>
-    </div>
-</div>
 
 <!-- ====================================================== ADMIN PANEL  -->
 <div id="adminPanel" class="admin-layout" style="display:none;">

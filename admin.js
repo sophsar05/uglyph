@@ -56,37 +56,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (session) {
         await checkAdminAccess(session.user);
     } else {
-        show('authGate');
+        window.location.href = 'index.html';
     }
 
     _sb.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN' && session) await checkAdminAccess(session.user);
-        if (event === 'SIGNED_OUT') { show('authGate'); hideAll(); }
+        if (event === 'SIGNED_OUT') { window.location.href = 'index.html'; }
     });
 });
 
 async function checkAdminAccess(user) {
-    // Primary check: app_metadata role set via Supabase Dashboard
-    if (user.app_metadata?.role === 'admin') {
-        bootAdmin(user); return;
+    const { data } = await _sb.from('suppliers').select('status, business_name').eq('id', user.id).maybeSingle();
+    if (user.app_metadata?.role === 'admin' || data?.status === 'admin') {
+        bootAdmin(user, data?.business_name); return;
     }
-    // Fallback: suppliers table status field
-    const { data } = await _sb.from('suppliers').select('status').eq('id', user.id).maybeSingle();
-    if (data?.status === 'admin') {
-        bootAdmin(user); return;
-    }
-    hide('authGate');
-    show('accessDenied');
+    // Not an admin — send back to the store
+    window.location.href = 'index.html';
 }
 
-function bootAdmin(user) {
-    hide('authGate');
-    hide('accessDenied');
+function bootAdmin(user, businessName) {
     document.getElementById('adminPanel').style.display = 'flex';
-    document.getElementById('adminUserDisplay').textContent = user.email;
-    // Avatar initial
+
+    const displayName = businessName
+        || user.user_metadata?.business_name
+        || user.user_metadata?.full_name
+        || user.email;
+
+    document.getElementById('adminUserDisplay').textContent = displayName;
     const avatarEl = document.getElementById('userAvatarInitial');
-    if (avatarEl) avatarEl.textContent = user.email[0].toUpperCase();
+    if (avatarEl) avatarEl.textContent = displayName[0].toUpperCase();
+
+    // Set dashboard tab title to "Business Name's Dashboard"
+    PAGE_TITLES.dashboard = businessName ? `${businessName}'s Dashboard` : 'Dashboard';
+    const titleEl = document.getElementById('pageTitle');
+    if (titleEl) titleEl.textContent = PAGE_TITLES.dashboard;
     initTabs();
     loadDashboard();
     loadProducts();
@@ -107,27 +110,7 @@ window.closeSidebar = function() {
     document.getElementById('sidebarOverlay').classList.remove('open');
 };
 
-// =============================================================================
-// AUTH FORM
-// =============================================================================
-
-document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('adminEmail').value;
-    const pass = document.getElementById('adminPassword').value;
-    const statusEl = document.getElementById('authStatus');
-    statusEl.textContent = 'Signing in...';
-    statusEl.className = 'auth-feedback loading';
-
-    const { error } = await _sb.auth.signInWithPassword({ email, password: pass });
-    if (error) {
-        statusEl.textContent = error.message;
-        statusEl.className = 'auth-feedback error';
-    }
-});
-
 document.getElementById('adminLogoutBtn').addEventListener('click', () => _sb.auth.signOut());
-document.getElementById('deniedLogoutBtn').addEventListener('click', () => _sb.auth.signOut());
 
 // =============================================================================
 // TABS
@@ -803,8 +786,6 @@ function formatDate(dateStr) {
 function show(id) { const el = document.getElementById(id); if (el) el.style.display = 'flex'; }
 function hide(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
 function hideAll() {
-    ['authGate','accessDenied','adminPanel'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-    });
+    const el = document.getElementById('adminPanel');
+    if (el) el.style.display = 'none';
 }

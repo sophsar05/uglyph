@@ -225,9 +225,9 @@ function renderManifest() {
     if (!manifestItemsContainer) return;
     manifestItemsContainer.innerHTML = manifest.length ? manifest.map((item, index) => `
         <div class="manifest-item">
-            <div class="manifest-item-title brand-font">> ITEM_${index + 1} // ${item.type}</div>
+            <div class="manifest-item-title brand-font">> ${item.type}</div>
             <div class="manifest-item-details mono-font">
-                <span>@ ₱${item.price}/KG</span>
+                <span>₱${item.price}/KG</span>
                 <span style="color: var(--white); font-weight: bold;">₱${item.weight * item.price}</span>
             </div>
             <div class="manifest-item-controls mono-font">
@@ -296,8 +296,17 @@ checkoutForm.addEventListener('submit', async (e) => {
     const name = checkoutName ? checkoutName.value : '';
     const contact = checkoutContact ? checkoutContact.value : '';
     const address = checkoutAddress ? checkoutAddress.value : '';
-    const gcashRef = checkoutGcashRef ? checkoutGcashRef.value : '';
+    const gcashRef = checkoutGcashRef ? checkoutGcashRef.value.trim() : '';
     const proofFile = checkoutProof && checkoutProof.files.length > 0 ? checkoutProof.files[0] : null;
+
+    if (!/^\d{13}$/.test(gcashRef)) {
+        if (checkoutStatus) checkoutStatus.textContent = '[ERROR] GCASH REFERENCE MUST BE EXACTLY 13 DIGITS';
+        return;
+    }
+    if (!proofFile) {
+        if (checkoutStatus) checkoutStatus.textContent = '[ERROR] PROOF OF PAYMENT IS REQUIRED';
+        return;
+    }
 
     if (checkoutStatus) checkoutStatus.textContent = '[SYSTEM] INITIALIZING SUBMISSION PROTOCOL...';
     
@@ -422,92 +431,91 @@ function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.7) {
 }
 
 // --- 4. SUPPLIER AUTHENTICATION (LOGIN & SIGNUP) ---
-// Modifying this block to redirect straight to admin.html on click
+
+// Open modal when footer link is clicked
 if (openLoginBtn) {
-    openLoginBtn.addEventListener('click', () => {
-        window.location.href = 'admin.html';
+    openLoginBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        setAuthMode(false);
+        if (loginModal) { loginModal.style.display = 'block'; loginModal.classList.add('active'); }
+        sharedOverlay.classList.add('active');
     });
 }
 
-if (authToggle) {
-    authToggle.addEventListener('click', () => {
-        isSignUpMode = !isSignUpMode;
-        if (isSignUpMode) {
-            authTitle.textContent = "SUPPLIER SIGN UP";
-            signupFields.style.display = "block";
-            authSubmitBtn.textContent = "REGISTER PROFILE";
-            authToggle.textContent = "ALREADY HAVE AN ACCOUNT? LOG IN";
-            businessName.required = true;
-            contactNumber.required = true;
-        } else {
-            authTitle.textContent = "SUPPLIER LOGIN";
-            signupFields.style.display = "none";
-            authSubmitBtn.textContent = "AUTHENTICATE";
-            authToggle.textContent = "DON'T HAVE AN ACCOUNT? SIGN UP";
-            businessName.required = false;
-            contactNumber.required = false;
+// Tab switching — also called from onclick in the HTML
+window.setAuthMode = function(signup) {
+    isSignUpMode = signup;
+    const tabLogin  = document.getElementById('tabLogin');
+    const tabSignup = document.getElementById('tabSignup');
+
+    if (signup) {
+        tabSignup.style.background = 'var(--yellow,#f1c40f)'; tabSignup.style.color = '#000'; tabSignup.style.fontWeight = '700';
+        tabLogin.style.background  = 'transparent';           tabLogin.style.color  = '#666'; tabLogin.style.fontWeight  = 'normal';
+        if (signupFields)  signupFields.style.display = 'block';
+        if (businessName)  businessName.required      = true;
+        if (contactNumber) contactNumber.required     = true;
+        if (authSubmitBtn) authSubmitBtn.textContent  = 'CREATE ACCOUNT';
+    } else {
+        tabLogin.style.background  = 'var(--yellow,#f1c40f)'; tabLogin.style.color  = '#000'; tabLogin.style.fontWeight  = '700';
+        tabSignup.style.background = 'transparent';           tabSignup.style.color = '#666'; tabSignup.style.fontWeight = 'normal';
+        if (signupFields)  signupFields.style.display = 'none';
+        if (businessName)  businessName.required      = false;
+        if (contactNumber) contactNumber.required     = false;
+        if (authSubmitBtn) authSubmitBtn.textContent  = 'LOG IN';
+    }
+};
+
+// Google OAuth
+const googleAuthBtn = document.getElementById('googleAuthBtn');
+if (googleAuthBtn) {
+    googleAuthBtn.addEventListener('click', async () => {
+        const { error } = await _supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo: window.location.origin + window.location.pathname }
+        });
+        if (error && loginStatus) {
+            loginStatus.style.color = 'red';
+            loginStatus.textContent = `[ERROR] ${error.message.toUpperCase()}`;
         }
     });
 }
 
+// Email / password form
 if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        const email = authEmail.value;
-        const password = authPassword.value;
-        
-        if (loginStatus) {
-            loginStatus.style.color = 'var(--yellow)';
-            loginStatus.textContent = '[SYSTEM] VERIFYING ID PROTOCOLS...';
-        }
-        authSubmitBtn.disabled = true;
+        const email    = authEmail ? authEmail.value.trim() : '';
+        const password = authPassword ? authPassword.value : '';
+        const username = document.getElementById('authUsername');
+
+        if (loginStatus) { loginStatus.style.color = 'var(--yellow)'; loginStatus.textContent = isSignUpMode ? '[SYSTEM] CREATING ACCOUNT...' : '[SYSTEM] AUTHENTICATING...'; }
+        if (authSubmitBtn) authSubmitBtn.disabled = true;
 
         try {
             if (isSignUpMode) {
-                const { data: authData, error: signUpError } = await _supabase.auth.signUp({
-                    email,
-                    password,
+                const { error } = await _supabase.auth.signUp({
+                    email, password,
                     options: {
                         data: {
-                            business_name: businessName.value,
-                            contact_number: contactNumber.value,
+                            business_name:  businessName  ? businessName.value.trim()  : '',
+                            contact_number: contactNumber ? contactNumber.value.trim() : '',
                             role: 'supplier'
                         }
                     }
                 });
-
-                if (signUpError) throw signUpError;
-
-                if (loginStatus) {
-                    loginStatus.style.color = '#00ff00';
-                    loginStatus.textContent = '[SUCCESS] REGISTRATION COMPLETE. REDIRECTING...';
-                }
+                if (error) throw error;
+                if (loginStatus) { loginStatus.style.color = '#00ff00'; loginStatus.textContent = '[SUCCESS] ACCOUNT CREATED. CHECK YOUR EMAIL TO CONFIRM.'; }
+                if (authSubmitBtn) authSubmitBtn.disabled = false;
+                return;
             } else {
-                const { data: authData, error: signInError } = await _supabase.auth.signInWithPassword({
-                    email,
-                    password
-                });
-
-                if (signInError) throw signInError;
-
-                if (loginStatus) {
-                    loginStatus.style.color = '#00ff00';
-                    loginStatus.textContent = '[ACCESS GRANTED] TERMINAL SECURED. LOADING...';
-                }
+                const { error } = await _supabase.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                if (loginStatus) { loginStatus.style.color = '#00ff00'; loginStatus.textContent = '[ACCESS GRANTED] REDIRECTING...'; }
+                setTimeout(() => { window.location.href = 'admin.html'; }, 800);
             }
-
-            setTimeout(() => {
-                window.location.href = 'admin.html';
-            }, 800);
-
         } catch (err) {
-            console.error("Authentication Error:", err);
-            if (loginStatus) {
-                loginStatus.style.color = 'red';
-                loginStatus.textContent = `[CRITICAL_FAIL] ${err.message.toUpperCase()}`;
-            }
-            authSubmitBtn.disabled = false;
+            if (loginStatus) { loginStatus.style.color = 'red'; loginStatus.textContent = `[ERROR] ${err.message}`; }
+            if (authSubmitBtn) authSubmitBtn.disabled = false;
         }
     });
 }
