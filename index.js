@@ -471,7 +471,7 @@ if (googleAuthBtn) {
     googleAuthBtn.addEventListener('click', async () => {
         const { error } = await _supabase.auth.signInWithOAuth({
             provider: 'google',
-            options: { redirectTo: window.location.origin + window.location.pathname }
+            options: { redirectTo: window.location.origin + '/admin.html' }
         });
         if (error && loginStatus) {
             loginStatus.style.color = 'red';
